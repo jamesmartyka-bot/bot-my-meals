@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 import { PostLockWaitingCard } from "@/components/post-lock-waiting";
 import { useSupper } from "@/components/supper-provider";
@@ -91,7 +91,7 @@ export function LockBar() {
             .finally(() => setBusy(false));
         }}
       >
-        <Lock className="size-5" />
+        {busy ? <Loader2 className="size-5 animate-spin" aria-hidden /> : <Lock className="size-5" />}
         {busy ? "Locking…" : "Lock this week"}
       </Button>
       {error ? <p className="type-meta mt-2 text-destructive">{error}</p> : null}

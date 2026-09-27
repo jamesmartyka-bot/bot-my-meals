@@ -13,6 +13,9 @@ import type {
 /** Temp ids for a store row the server has not inserted yet. */
 export const OPTIMISTIC_STORE_PREFIX = "optimistic-store-";
 
+/** Instant-feedback lock: short revert copy for a list check that fails to save. */
+export const LIST_CHECK_SAVE_ERROR = "Couldn\u2019t save \u2014 try again.";
+
 export type OptimisticPatch<T> = (value: T) => T;
 
 export type PendingOptimistic<T> = {

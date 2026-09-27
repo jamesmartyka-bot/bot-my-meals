@@ -149,6 +149,7 @@ function ShoppingListRow({
       name={name}
       quantity={quantity}
       checked={optimistic.value}
+      syncing={optimistic.pending}
       onCheckedChange={optimistic.commit}
     />
   );

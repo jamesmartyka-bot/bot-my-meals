@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { emptyHousehold } from "@/lib/seed";
 import type { HouseholdSnapshot, Meal, ShoppingItem } from "@/lib/types";
 import {
+  LIST_CHECK_SAVE_ERROR,
   applyOptimistic,
   dropOptimistic,
   patchHousehold,
@@ -64,6 +65,10 @@ function snapshot(): HouseholdSnapshot {
 }
 
 describe("optimistic snapshot patches", () => {
+  it("uses the lock’s short list-check error", () => {
+    expect(LIST_CHECK_SAVE_ERROR).toBe("Couldn\u2019t save \u2014 try again.");
+  });
+
   it("checks a shopping item without waiting on the saved list", () => {
     const base = snapshot();
     const checked = patchItemChecked(base, "item-1", true);

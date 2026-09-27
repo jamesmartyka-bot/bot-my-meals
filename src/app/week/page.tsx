@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useState, type ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
@@ -275,6 +276,7 @@ function emptyWeekCta(
           aria-busy={creating}
           onClick={() => void onCreate()}
         >
+          {creating ? <Loader2 className="size-5 animate-spin" aria-hidden /> : null}
           {creating ? "Saving…" : cta}
         </Button>
       );

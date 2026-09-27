@@ -16,6 +16,7 @@ import {
   patchMemberRole,
   patchStoreAdded,
   patchStoreRemoved,
+  LIST_CHECK_SAVE_ERROR,
   patchVote,
   queueOptimistic,
   type OptimisticPatch,
@@ -483,8 +484,12 @@ function SupabaseSupperProvider({ children }: { children: React.ReactNode }) {
       toggleItem: (itemId, checked) =>
         runOptimistic(`item:${itemId}`, (snap) => patchItemChecked(snap, itemId, checked), async () => {
           const client = createSupabaseBrowserClient();
-          if (!client) throw new Error("Not signed in");
-          await supabaseToggleItem(client, itemId, checked);
+          if (!client) throw new Error(LIST_CHECK_SAVE_ERROR);
+          try {
+            await supabaseToggleItem(client, itemId, checked);
+          } catch {
+            throw new Error(LIST_CHECK_SAVE_ERROR);
+          }
         }),
       updateHousehold: (patch) => {
         const current = session;

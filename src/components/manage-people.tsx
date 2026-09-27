@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { HouseCard } from "@/components/house-card";
 import { useSupper } from "@/components/supper-provider";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +93,7 @@ export function ManagePeople() {
                       .finally(() => setRemovingId(null));
                   }}
                 >
+                  {removingId === member.id ? <Loader2 className="size-5 animate-spin" aria-hidden /> : null}
                   {removingId === member.id ? "Removing…" : "Remove"}
                 </Button>
               </div>
@@ -130,6 +132,7 @@ export function ManagePeople() {
                     .finally(() => setRemovingId(null));
                 }}
               >
+                {removingId === invite.id ? <Loader2 className="size-5 animate-spin" aria-hidden /> : null}
                 {removingId === invite.id ? "Removing…" : "Remove"}
               </Button>
             </div>

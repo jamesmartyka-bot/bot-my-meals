@@ -11,22 +11,25 @@ export function useOptimisticValue<T>(
   persist: (next: T) => Promise<void>,
 ): { value: T; pending: boolean; commit: (next: T) => void } {
   const [override, setOverride] = useState<{ id: number; value: T } | null>(null);
+  const [pending, setPending] = useState(false);
   const generation = useRef(0);
-  const matchesCommitted = override !== null && Object.is(committed, override.value);
-
-  if (matchesCommitted) setOverride(null);
+  const inflight = useRef(0);
 
   const commit = (next: T) => {
     const id = ++generation.current;
+    inflight.current += 1;
     setOverride({ id, value: next });
-    void persist(next).catch(() => {
+    setPending(true);
+    void persist(next).finally(() => {
+      inflight.current -= 1;
       if (generation.current === id) setOverride(null);
+      if (inflight.current === 0) setPending(false);
     });
   };
 
   return {
-    value: matchesCommitted || override === null ? committed : override.value,
-    pending: override !== null && !matchesCommitted,
+    value: override === null ? committed : override.value,
+    pending,
     commit,
   };
 }
