@@ -116,6 +116,14 @@ export async function fetchSupabaseSession(
   };
 }
 
+/** The open week's list. A household can have one list per locked week. */
+export function shoppingListRowForWeek<T extends { week_id: string }>(
+  rows: readonly T[] | null | undefined,
+  weekId: string,
+): T | null {
+  return rows?.find((row) => row.week_id === weekId) ?? null;
+}
+
 export async function fetchSupabaseSnapshot(
   client: SupabaseClient,
   session: Session,
@@ -152,7 +160,7 @@ export async function fetchSupabaseSnapshot(
     client.from("votes").select("*").eq("household_id", householdId),
     client.from("recipes").select("*").eq("household_id", householdId),
     client.from("recipe_ingredients").select("*").eq("household_id", householdId),
-    client.from("shopping_lists").select("*").eq("household_id", householdId).maybeSingle(),
+    client.from("shopping_lists").select("*").eq("household_id", householdId),
     client.from("household_invites").select("*").eq("household_id", householdId),
     client
       .from("household_join_tokens")
@@ -245,17 +253,20 @@ export async function fetchSupabaseSnapshot(
     lockedAt: weekRow.locked_at,
   };
 
+  if (listRes.error) throw new Error(listRes.error.message);
+  const listRow = shoppingListRowForWeek(listRes.data, week.id);
   let shoppingList: ShoppingList | null = null;
-  if (listRes.data && listRes.data.week_id === week.id) {
+  if (listRow) {
     const itemsRes = await client
       .from("shopping_items")
       .select("*")
-      .eq("shopping_list_id", listRes.data.id);
+      .eq("shopping_list_id", listRow.id);
+    if (itemsRes.error) throw new Error(itemsRes.error.message);
     shoppingList = {
-      id: listRes.data.id,
-      householdId: listRes.data.household_id,
-      weekId: listRes.data.week_id,
-      generatedAt: listRes.data.generated_at,
+      id: listRow.id,
+      householdId: listRow.household_id,
+      weekId: listRow.week_id,
+      generatedAt: listRow.generated_at,
       items: (itemsRes.data ?? []).map(
         (row): ShoppingItem => ({
           id: row.id,

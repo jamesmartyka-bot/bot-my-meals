@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   HOUSEHOLD_NOT_VISIBLE,
   fetchSupabaseSession,
+  shoppingListRowForWeek,
   supabaseCreateHousehold,
 } from "./repo";
 
@@ -123,5 +126,24 @@ describe("fetchSupabaseSession", () => {
         }),
       ),
     ).rejects.toThrow("permission denied for schema private");
+  });
+});
+
+describe("shoppingListRowForWeek", () => {
+  it("uses the open week's list when older locked weeks also have lists", () => {
+    const current = { id: "list-current", week_id: "week-current" };
+    const previous = { id: "list-previous", week_id: "week-previous" };
+    expect(shoppingListRowForWeek([previous, current], "week-current")).toEqual(current);
+    expect(shoppingListRowForWeek([previous], "week-current")).toBeNull();
+    expect(shoppingListRowForWeek(null, "week-current")).toBeNull();
+    expect(shoppingListRowForWeek([], "week-current")).toBeNull();
+  });
+
+  it("does not read every household shopping list with maybeSingle", () => {
+    const source = readFileSync(path.join(import.meta.dirname, "repo.ts"), "utf8");
+    expect(source).toContain("shoppingListRowForWeek(listRes.data, week.id)");
+    expect(source).not.toContain(
+      'from("shopping_lists").select("*").eq("household_id", householdId).maybeSingle()',
+    );
   });
 });
