@@ -41,6 +41,13 @@ export function HouseStores({
     if (onPostalCode) void onPostalCode(next);
   };
 
+  const addCustomStore = () => {
+    const name = storeName.trim();
+    if (!name) return;
+    void onAdd(name);
+    setStoreName("");
+  };
+
   return (
     <HouseCard className="mt-6" data-slot="house-stores">
       <h2 className="type-section text-primary">Stores</h2>
@@ -125,12 +132,12 @@ export function HouseStores({
       </ul>
       {canEdit ? (
         <form
+          data-slot="add-store"
           className="mt-3 flex gap-2"
           onSubmit={(event) => {
             event.preventDefault();
-            if (!storeName.trim()) return;
-            void onAdd(storeName.trim());
-            setStoreName("");
+            event.stopPropagation();
+            addCustomStore();
           }}
         >
           <Input
@@ -140,7 +147,9 @@ export function HouseStores({
             className="h-12 min-h-12 rounded-[var(--radius-button)] bg-card"
             aria-label="Store name"
           />
-          <Button size="fat">Add</Button>
+          <Button type="button" size="fat" onClick={() => addCustomStore()}>
+            Add
+          </Button>
         </form>
       ) : null}
     </HouseCard>
