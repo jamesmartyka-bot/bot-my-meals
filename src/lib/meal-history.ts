@@ -1,10 +1,4 @@
-import {
-  addDays,
-  formatNightDate,
-  formatWeekRange,
-  weekdayIndexFromDate,
-  weekdayShortFromNight,
-} from "./dates";
+import { addDays, formatMealCardDayLabel, formatWeekRange, weekdayIndexFromDate } from "./dates";
 import type { MealHistoryNight, MealHistoryWeek, WeekStatus } from "./types";
 
 /** UI lists this many finished weeks, newest first. Older rows drop from History. */
@@ -127,7 +121,7 @@ export function historyWeekRowLabel(startsOn: string, dinnerCount: number): stri
 }
 
 export function historyNightLine(night: Pick<MealHistoryNight, "nightDate" | "title">): string {
-  return `${weekdayShortFromNight(night.nightDate)} · ${formatNightDate(night.nightDate)} · ${night.title}`;
+  return `${formatMealCardDayLabel(night.nightDate)} · ${night.title}`;
 }
 
 /** Keep title, night date, and plates. Drop anything else a payload might carry. */
