@@ -79,6 +79,7 @@ describe("setup polish copy lock", () => {
     const wizard = readFileSync(path.join(srcRoot, "components/setup-wizard.tsx"), "utf8");
     const toggles = readFileSync(path.join(srcRoot, "components/night-toggles.tsx"), "utf8");
     expect(wizard).toContain("household-size");
+    expect(wizard).not.toContain("HOUSE_SIZE_LATER_HELPER");
     expect(wizard).toContain("NightToggles");
     expect(wizard).toContain("hideNav");
     expect(wizard).toContain("compactOffNights");
