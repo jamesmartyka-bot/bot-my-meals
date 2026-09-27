@@ -85,8 +85,12 @@ function WeekBallot() {
   const nights = recipeNightsForWeek(snapshot.meals);
 
   const act = async (mealId: string, choice: VoteChoice, note?: string) => {
-    const message = await setVote(mealId, choice, note);
-    if (message) setToast(message);
+    try {
+      const message = await setVote(mealId, choice, note);
+      if (message) setToast(message);
+    } catch {
+      // The provider rolls the night back and shows the error.
+    }
   };
 
   return (

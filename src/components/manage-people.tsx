@@ -23,6 +23,7 @@ export function ManagePeople() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("voter");
   const [busy, setBusy] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!snapshot || !isAdmin(session?.role)) return null;
@@ -80,9 +81,18 @@ export function ManagePeople() {
                   variant="outline"
                   size="fat"
                   className="flex-1 text-destructive"
-                  onClick={() => void removeMember(member.id)}
+                  disabled={removingId === member.id}
+                  aria-busy={removingId === member.id}
+                  onClick={() => {
+                    setRemovingId(member.id);
+                    void removeMember(member.id)
+                      .catch((err: unknown) => {
+                        setError(err instanceof Error ? err.message : "Could not remove that person.");
+                      })
+                      .finally(() => setRemovingId(null));
+                  }}
                 >
-                  Remove
+                  {removingId === member.id ? "Removing…" : "Remove"}
                 </Button>
               </div>
             </li>
@@ -109,9 +119,18 @@ export function ManagePeople() {
                 variant="outline"
                 size="fat"
                 className="shrink-0 text-destructive"
-                onClick={() => void removeInvite(invite.id)}
+                disabled={removingId === invite.id}
+                aria-busy={removingId === invite.id}
+                onClick={() => {
+                  setRemovingId(invite.id);
+                  void removeInvite(invite.id)
+                    .catch((err: unknown) => {
+                      setError(err instanceof Error ? err.message : "Could not remove that invite.");
+                    })
+                    .finally(() => setRemovingId(null));
+                }}
               >
-                Remove
+                {removingId === invite.id ? "Removing…" : "Remove"}
               </Button>
             </div>
           ))}
