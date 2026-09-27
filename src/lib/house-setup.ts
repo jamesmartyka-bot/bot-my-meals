@@ -35,7 +35,7 @@ export const HOUSE_SETUP_STEPS = [
     id: "size" as const,
     step: 2,
     title: "How many people?",
-    helper: "We’ll plan plates for everyone at the table — Alex, Jordan, and anyone else at home.",
+    helper: "We’ll plan plates for everyone at the table.",
     cta: "Next",
   },
   {

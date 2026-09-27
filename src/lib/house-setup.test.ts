@@ -7,6 +7,7 @@ import {
   FINISH_SETUP_CTA,
   HOUSE_SETUP_DONE_STEP,
   HOUSE_SETUP_STEPS,
+  HOUSE_SIZE_LATER_HELPER,
   WAITING_FOR_BOT,
   ALL_NIGHTS_ON,
   applyHouseholdSizeToHeadcounts,
@@ -44,7 +45,9 @@ describe("wizard v2 house setup", () => {
     ]);
     expect(HOUSE_SETUP_STEPS[0].title).toBe("Invite people");
     expect(HOUSE_SETUP_STEPS[1].title).toBe("How many people?");
-    expect(HOUSE_SETUP_STEPS[1].helper).toMatch(/Alex, Jordan/);
+    expect(HOUSE_SETUP_STEPS[1].helper).toBe("We’ll plan plates for everyone at the table.");
+    expect(HOUSE_SETUP_STEPS[1].helper).not.toMatch(/Alex|Jordan/);
+    expect(HOUSE_SIZE_LATER_HELPER).toBe("You can change this later.");
     expect(HOUSE_SETUP_STEPS[1].cta).toBe("Next");
     expect(HOUSE_SETUP_STEPS[2].title).toBe("Which nights get a meal?");
     expect(HOUSE_SETUP_STEPS[2].helper).toMatch(/turn nights off/i);
@@ -163,6 +166,13 @@ describe("house setup surfaces", () => {
     expect(wizard).not.toContain("Checkbox");
     expect(wizard).not.toContain("setup-sample");
     expect(wizard).not.toContain("ASK_BOT_SEVEN_DINNERS_CTA");
+    expect(wizard).not.toMatch(/\bAlex\b/);
+    expect(wizard).not.toMatch(/\bJordan\b/);
+    expect(readFileSync(path.join(srcRoot, "lib/house-setup.ts"), "utf8")).not.toMatch(/\bAlex\b|\bJordan\b/);
+    expect(readFileSync(path.join(srcRoot, "lib/setup.ts"), "utf8")).not.toMatch(/\bAlex\b|\bJordan\b/);
+    expect(readFileSync(path.join(srcRoot, "components/onboarding.tsx"), "utf8")).not.toMatch(
+      /\bAlex\b|\bJordan\b/,
+    );
     expect(week).toContain("emptyWeekPresentation");
     expect(week).toContain("/week?setup=1");
     expect(week).toContain("requestWeekBallot");
