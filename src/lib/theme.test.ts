@@ -112,7 +112,7 @@ describe("theme D Clear Sky brand tokens", () => {
     expect(css).toContain("--font-heading: var(--font-nunito)");
   });
 
-  it("points BrandMark and PWA icons at the Cos chef SoT", () => {
+  it("points BrandMark and PWA icons at the locked chef-bot SoT", () => {
     const brandMark = readFileSync(path.join(srcRoot, "components/brand-mark.tsx"), "utf8");
     const layout = readFileSync(path.join(srcRoot, "app/layout.tsx"), "utf8");
     const pwa = readFileSync(path.join(repoRoot, "scripts/write-pwa-icons.mjs"), "utf8");
@@ -149,7 +149,7 @@ describe("theme D Clear Sky brand tokens", () => {
     expect(shell).toContain('size="compact"');
   });
 
-  it("ships the Cos chef SoT bytes (exact sha256)", () => {
+  it("ships the locked chef-bot SoT bytes (exact sha256)", () => {
     const files: Array<[string, string]> = [
       ["public/brand/mark-chef-bot-only.png", BRAND_SPEC_SHA256.mark],
       ["public/brand/icon-chef-bot-only-180.png", BRAND_SPEC_SHA256.icon180],
