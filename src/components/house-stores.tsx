@@ -131,18 +131,16 @@ export function HouseStores({
         ))}
       </ul>
       {canEdit ? (
-        <form
-          data-slot="add-store"
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            addCustomStore();
-          }}
-        >
+        <div className="mt-3 flex gap-2">
           <Input
             value={storeName}
             onChange={(event) => setStoreName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              event.stopPropagation();
+              addCustomStore();
+            }}
             placeholder="Add a store"
             className="h-12 min-h-12 rounded-[var(--radius-button)] bg-card"
             aria-label="Store name"
@@ -150,7 +148,7 @@ export function HouseStores({
           <Button type="button" size="fat" onClick={() => addCustomStore()}>
             Add
           </Button>
-        </form>
+        </div>
       ) : null}
     </HouseCard>
   );

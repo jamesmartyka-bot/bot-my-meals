@@ -14,18 +14,25 @@ describe("House Clear Sky kit", () => {
     expect(source).not.toContain("GOOGLE_MAPS");
   });
 
-  it("adds a custom store without submitting the setup wizard", () => {
-    const stores = readFileSync(path.join(srcRoot, "components/house-stores.tsx"), "utf8");
+  it("adds a custom store without a form submit that can leave the setup wizard", () => {
+    const source = readFileSync(path.join(srcRoot, "components/house-stores.tsx"), "utf8");
     const wizard = readFileSync(path.join(srcRoot, "components/setup-wizard.tsx"), "utf8");
+    const week = readFileSync(path.join(srcRoot, "app/week/page.tsx"), "utf8");
 
-    expect(stores).toContain('data-slot="add-store"');
-    expect(stores).toContain("stopPropagation");
-    expect(stores).toContain("addCustomStore");
-    expect(stores).toContain('type="button"');
+    expect(source).toContain("addCustomStore");
+    expect(source).toContain("void onAdd(name)");
+    expect(source).toContain('<Button type="button" size="fat" onClick={() => addCustomStore()}>');
+    expect(source).toContain('if (event.key !== "Enter") return');
+    expect(source).toContain("event.preventDefault()");
+    expect(source).not.toContain("<form");
+    expect(wizard).toContain('<div data-slot="setup-wizard"');
     expect(wizard).not.toContain("<form");
-    expect(wizard).toContain('data-slot="setup-wizard"');
-    expect(wizard).toContain("addStore");
-    expect(wizard).toContain("HouseStores");
+    expect(wizard).toContain("onAdd={(name) => void addStore(name)}");
+    expect(wizard).not.toMatch(/onAdd=\{[^}]*advance/);
+    expect(wizard).toContain("onClick={() =>");
+    expect(wizard).toContain("void advance(");
+    expect(week).toContain('searchParams.get("setup") === "1"');
+    expect(week).toContain("SetupWizard");
   });
 
   it("uses card elevation, type ramp, and 48px steppers on people-per-night", () => {
