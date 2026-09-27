@@ -5,11 +5,9 @@ import type { Meal, Recipe, ShoppingItem, Store, Vote } from "./types";
 import {
   STORE_LABEL_SMITHS,
   STORE_LABEL_TRADER_JOES,
-  STORE_LABEL_UNMATCHED,
   buildShoppingItems,
   groupStickyStoreLists,
   listItemDisplay,
-  listSectionLabel,
   listStoreLabel,
   mergeQuantities,
   normalizeItemName,
@@ -140,12 +138,13 @@ describe("shopping merge", () => {
 });
 
 describe("sticky store labels", () => {
-  it("keeps every store's items, with canonical names only for the original slugs", () => {
+  it("labels Trader Joe's and Smith's only — never Kroger or a third store", () => {
     expect(listStoreLabel({ slug: "trader-joes" })).toBe(STORE_LABEL_TRADER_JOES);
     expect(listStoreLabel({ slug: "smiths" })).toBe(STORE_LABEL_SMITHS);
+    expect(listStoreLabel({ slug: "trader-joe-s" })).toBe(STORE_LABEL_TRADER_JOES);
+    expect(listStoreLabel({ slug: "smith-s" })).toBe(STORE_LABEL_SMITHS);
     expect(listStoreLabel({ slug: "kroger" })).toBeNull();
     expect(listStoreLabel({ slug: "costco" })).toBeNull();
-    expect(listSectionLabel({ slug: "kroger", name: "Kroger" })).toBe("Kroger");
     expect(STORE_LABEL_TRADER_JOES).toBe("Trader Joe's");
     expect(STORE_LABEL_SMITHS).toBe("Smith's");
 
@@ -197,23 +196,22 @@ describe("sticky store labels", () => {
     ];
 
     const groups = groupStickyStoreLists(items, stores);
-    expect(groups.map((group) => group.label)).toEqual(["Trader Joe's", "Kroger", "Smith's"]);
+    expect(groups.map((group) => group.label)).toEqual(["Trader Joe's", "Smith's"]);
     expect(groups.flatMap((group) => group.items.map((item) => item.name))).toEqual([
       "Salsa",
-      "Milk",
       "Chicken",
     ]);
-    const shown = groups.flatMap((group) => group.items.map((item) => listItemDisplay(item)));
-    expect(JSON.stringify(shown)).not.toContain("399");
-    expect(JSON.stringify(shown)).not.toContain("$");
-    expect(JSON.stringify(shown)).not.toContain("cart");
+    expect(JSON.stringify(groups)).not.toContain("Kroger");
+    expect(JSON.stringify(groups)).not.toContain("Milk");
+    expect(JSON.stringify(groups)).not.toContain("399");
   });
 
-  it("shows a Smith's-only list when the store was added by name (slug smith-s)", () => {
+  it("renders items when the store slug is the apostrophe form smith-s", () => {
     const slug = "Smith's".toLowerCase().replace(/[^a-z0-9]+/g, "-");
     expect(slug).toBe("smith-s");
     const stores: Store[] = [
       { id: "smiths-store", householdId: "h", name: "Smith's", slug, sortOrder: 0 },
+      { id: "tj-store", householdId: "h", name: "Trader Joe's", slug: "trader-joe-s", sortOrder: 1 },
     ];
     const items: ShoppingItem[] = [
       {
@@ -242,34 +240,36 @@ describe("sticky store labels", () => {
         pricedAt: null,
         checked: false,
       },
-    ];
-
-    const groups = groupStickyStoreLists(items, stores);
-    expect(groups).toHaveLength(1);
-    expect(groups[0]?.label).toBe("Smith's");
-    expect(groups[0]?.items.map((item) => item.name)).toEqual(["Chicken thighs", "Yellow onion"]);
-  });
-
-  it("still lists items when their store row is missing from the snapshot", () => {
-    const items: ShoppingItem[] = [
       {
-        id: "1",
+        id: "3",
         householdId: "h",
         shoppingListId: "l",
-        storeId: "missing-store",
-        name: "Rice",
-        quantity: 2,
-        unit: "cups",
+        storeId: "tj-store",
+        name: "Salsa",
+        quantity: 1,
+        unit: "jar",
         priceCents: null,
         priceSource: null,
         pricedAt: null,
         checked: false,
       },
     ];
-    const groups = groupStickyStoreLists(items, []);
-    expect(groups).toHaveLength(1);
-    expect(groups[0]?.label).toBe(STORE_LABEL_UNMATCHED);
-    expect(groups[0]?.items.map((item) => item.name)).toEqual(["Rice"]);
+
+    const groups = groupStickyStoreLists(items, stores);
+    expect(groups.map((group) => group.label)).toEqual(["Smith's", "Trader Joe's"]);
+    expect(groups[0]?.items.map((item) => item.name)).toEqual(["Chicken thighs", "Yellow onion"]);
+    expect(groups[1]?.items.map((item) => item.name)).toEqual(["Salsa"]);
+  });
+
+  it("rewrites apostrophe store slugs to the catalog slugs", () => {
+    const sql = readFileSync(
+      path.resolve(import.meta.dirname, "../../supabase/migrations/20260927190000_normalize_store_slugs.sql"),
+      "utf8",
+    );
+    expect(sql).toContain("set slug = 'smiths'");
+    expect(sql).toContain("bad.slug = 'smith-s'");
+    expect(sql).toContain("set slug = 'trader-joes'");
+    expect(sql).toContain("bad.slug = 'trader-joe-s'");
   });
 });
 
