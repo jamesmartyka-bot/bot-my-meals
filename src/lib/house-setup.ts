@@ -209,16 +209,14 @@ export function formatWeeklyBudgetDollars(cents: number | null | undefined): str
   return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
 }
 
-export function weeklyBudgetCurrencyPrefix(postalCode: string | null | undefined): "$" | "" {
-  if (!postalCode?.trim()) return "";
-  const kind: PostalKind = classifyPostalCode(postalCode).kind;
+export function weeklyBudgetCurrencyPrefix(postalCode: string | null | undefined): "$" {
+  const kind: PostalKind = postalCode?.trim() ? classifyPostalCode(postalCode).kind : "us";
   switch (kind) {
     case "us":
-      return "$";
     case "ca":
     case "uk":
     case "unknown":
-      return "";
+      return "$";
     default: {
       const _exhaustive: never = kind;
       return _exhaustive;

@@ -119,19 +119,23 @@ describe("wizard v2 house setup", () => {
     expect(formatWeeklyBudgetDollars(null)).toBe("");
   });
 
-  it("prefixes a US ZIP with $ and leaves other postal codes unprefixed", () => {
-    expect(weeklyBudgetCurrencyPrefix("84121")).toBe("$");
-    expect(weeklyBudgetCurrencyPrefix("84121-1234")).toBe("$");
-    expect(weeklyBudgetCurrencyPrefix("841211234")).toBe("$");
-    expect(weeklyBudgetCurrencyPrefix("M5V 2T6")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("SW1A 1AA")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("SW1A1AA")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("  ")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix(null)).toBe("");
-    expect(weeklyBudgetCurrencyPrefix(undefined)).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("??")).toBe("");
-    expect(weeklyBudgetCurrencyPrefix("8412")).toBe("");
+  it("binds $ to a US ZIP and to the default path so the amount is never unitless", () => {
+    for (const postalCode of [
+      "84121",
+      "84121-1234",
+      "841211234",
+      "M5V 2T6",
+      "SW1A 1AA",
+      "SW1A1AA",
+      "",
+      "  ",
+      null,
+      undefined,
+      "??",
+      "8412",
+    ]) {
+      expect(weeklyBudgetCurrencyPrefix(postalCode)).toBe("$");
+    }
   });
 
   it("builds a Grok paste from this house's plates, stores, and budget", () => {
@@ -259,8 +263,24 @@ describe("house setup surfaces", () => {
   });
 });
 
+function expectDollarBoundToAmount(html: string, id: string, value: string) {
+  const fieldStart = html.indexOf('data-slot="weekly-budget-field"');
+  expect(fieldStart).toBeGreaterThanOrEqual(0);
+  const field = html.slice(fieldStart);
+  const prefixAt = field.indexOf('data-slot="weekly-budget-prefix"');
+  const dollarAt = field.indexOf(">$</span>");
+  const inputAt = field.indexOf(`id="${id}"`);
+  expect(prefixAt).toBeGreaterThanOrEqual(0);
+  expect(dollarAt).toBeGreaterThan(prefixAt);
+  expect(inputAt).toBeGreaterThan(dollarAt);
+  expect(field).toContain(`value="${value}"`);
+  expect(field).toContain("pl-7");
+  expect(field).not.toContain("<select");
+  expect(field).not.toMatch(/USD|EUR|GBP|currency picker/i);
+}
+
 describe("US weekly budget prefix", () => {
-  it("renders a $ inside the amount field for a US ZIP and keeps the number bare in the value", () => {
+  it("renders a leading $ inside the same control as the digits for a US ZIP", () => {
     const html = renderToStaticMarkup(
       createElement(WeeklyBudgetField, {
         id: "weekly-budget",
@@ -271,29 +291,23 @@ describe("US weekly budget prefix", () => {
       }),
     );
 
-    expect(html).toContain('data-slot="weekly-budget-prefix"');
-    expect(html).toContain(">$</span>");
-    expect(html).toContain('id="weekly-budget"');
-    expect(html).toContain('value="150"');
+    expectDollarBoundToAmount(html, "weekly-budget", "150");
     expect(html).toContain('aria-describedby="weekly-budget-hint weekly-budget-currency"');
     expect(html).toContain("US dollars");
-    expect(html).not.toContain("<select");
     expect(html).not.toContain("placeholder=");
   });
 
-  it("does not invent a dollar prefix for Canadian, UK, or missing postal codes", () => {
-    for (const postalCode of ["M5V 2T6", "SW1A 1AA", "", null]) {
+  it("still shows $ when zip is missing or not a US ZIP, with no currency picker", () => {
+    for (const postalCode of ["M5V 2T6", "SW1A 1AA", "", null, "??"]) {
       const html = renderToStaticMarkup(
         createElement(WeeklyBudgetField, {
           id: "weekly-budget",
-          value: "",
+          value: "150",
           postalCode,
           onChange: () => undefined,
         }),
       );
-      expect(html).not.toContain('data-slot="weekly-budget-prefix"');
-      expect(html).not.toContain(">$</span>");
-      expect(html).toContain('id="weekly-budget"');
+      expectDollarBoundToAmount(html, "weekly-budget", "150");
     }
   });
 
@@ -311,7 +325,9 @@ describe("US weekly budget prefix", () => {
     expect(fieldBody).toContain("postalCode={household.postalCode}");
     expect(fieldBody).toContain("{meta.helper}");
     expect(fieldBody).toContain('htmlFor="weekly-budget"');
+    expect(fieldBody).toContain(">Weekly meal budget</Label>");
     expect(fieldBody).not.toContain("<Input");
+    expect(fieldBody).not.toMatch(/\bUSD\b|\bEUR\b|\bGBP\b/);
     expect(footerBody).toContain('budget.trim() ? "Continue" : "Skip"');
     expect(wizard).not.toContain("currency picker");
     expect(wizard).not.toContain("<select");
@@ -329,6 +345,10 @@ describe("US weekly budget prefix", () => {
     expect(field).toContain('data-slot="weekly-budget-prefix"');
     expect(field).toContain("{prefix}");
     expect(field).not.toContain("<select");
-    expect(HOUSE_SETUP_STEPS[5].helper).toMatch(/never invent grocery prices/i);
+    expect(HOUSE_SETUP_STEPS[5].id).toBe("budget");
+    expect(HOUSE_SETUP_STEPS[5].title).toBe("Weekly meal budget");
+    expect(HOUSE_SETUP_STEPS[5].helper).toBe(
+      "A target for dinners this week. We never invent grocery prices.",
+    );
   });
 });
