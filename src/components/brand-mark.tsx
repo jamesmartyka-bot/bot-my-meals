@@ -34,7 +34,7 @@ export function BrandMark({
           align === "center" && "mx-auto",
         )}
       >
-        {/* Cos chef mark PNG — wordmark is HTML, not in the file. */}
+        {/* locked mark PNG — wordmark is HTML, not in the file. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={BRAND_MARK_SRC} alt="" className={cn("shrink-0", MARK_SIZE[size])} />
         <p
