@@ -25,7 +25,7 @@ import {
   type EmptyWeekAction,
 } from "@/lib/ballot";
 import { botCheckForSnapshot } from "@/lib/bot-check";
-import { formatWeekRange, weekdayLabelFromNight, weekdayShortFromNight } from "@/lib/dates";
+import { formatMealCardDayLabel, formatWeekRange, weekdayLabelFromNight } from "@/lib/dates";
 import { canActOnBallot, checkWeekLock, latestVoteForMeal, nightLifecycle } from "@/lib/lock";
 import { recipeNightsForWeek } from "@/lib/recipes";
 import type { VoteChoice } from "@/lib/types";
@@ -84,7 +84,7 @@ function WeekBallot() {
         <div className="space-y-3">
           <WaitingBotCheck status={botCheck} pendingWorkOnly className="mb-1" />
           {nights.map((meal) => {
-            const weekday = weekdayShortFromNight(meal.nightDate);
+            const dayLabel = formatMealCardDayLabel(meal.nightDate);
             const dayName = weekdayLabelFromNight(meal.nightDate);
             const latest = latestVoteForMeal(snapshot.votes, meal.id, snapshot.memberships);
             const lifecycle = nightLifecycle(meal, snapshot.votes, snapshot.memberships);
@@ -95,7 +95,7 @@ function WeekBallot() {
                 return (
                   <EmptyDayCard
                     key={meal.id}
-                    dayLabel={weekday}
+                    dayLabel={dayLabel}
                     dayName={dayName}
                     state="empty"
                     onAdd={canVote ? (note) => act(meal.id, "request_new_meal", note) : undefined}
@@ -105,7 +105,7 @@ function WeekBallot() {
                 return (
                   <EmptyDayCard
                     key={meal.id}
-                    dayLabel={weekday}
+                    dayLabel={dayLabel}
                     dayName={dayName}
                     state="pending"
                     note={latest?.note}
@@ -116,7 +116,7 @@ function WeekBallot() {
                 return (
                   <EmptyDayCard
                     key={meal.id}
-                    dayLabel={weekday}
+                    dayLabel={dayLabel}
                     dayName={dayName}
                     state="locked"
                   />
@@ -125,7 +125,7 @@ function WeekBallot() {
                 return (
                   <BallotCard
                     key={meal.id}
-                    dayLabel={weekday}
+                    dayLabel={dayLabel}
                     confirmDayLabel={dayName}
                     title={meal.title}
                     pitch={meal.pitch}
