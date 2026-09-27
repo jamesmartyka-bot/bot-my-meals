@@ -1,4 +1,5 @@
 import { WEEKDAY_SHORT } from "./dates";
+import { classifyPostalCode, type PostalKind } from "./grocers";
 import { clampHeadcount, clampNightHeadcount, normalizeNightHeadcounts } from "./headcount";
 import { isAdmin } from "./users";
 import type { Role } from "./types";
@@ -206,6 +207,23 @@ export function formatWeeklyBudgetDollars(cents: number | null | undefined): str
   if (cents == null) return "";
   if (!Number.isFinite(cents) || cents < 0) return "";
   return cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2);
+}
+
+export function weeklyBudgetCurrencyPrefix(postalCode: string | null | undefined): "$" | "" {
+  if (!postalCode?.trim()) return "";
+  const kind: PostalKind = classifyPostalCode(postalCode).kind;
+  switch (kind) {
+    case "us":
+      return "$";
+    case "ca":
+    case "uk":
+    case "unknown":
+      return "";
+    default: {
+      const _exhaustive: never = kind;
+      return _exhaustive;
+    }
+  }
 }
 
 export function clampHouseholdSize(value: unknown): number {
