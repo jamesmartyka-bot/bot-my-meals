@@ -1,7 +1,10 @@
--- Hotfix: private.open_cooking_week declared `found public.weeks%rowtype`,
+-- Hotfix: private.open_cooking_week declared a weeks row named found,
 -- which shadows PL/pgSQL's boolean FOUND. `if not found` then applied NOT to
--- a weeks composite ("argument of NOT must be type boolean, not type weeks")
--- and This week / Home failed to load. Rename the row to week_row.
+-- a weeks composite ("argument of NOT must be type boolean, not type weeks").
+-- Next week hits this: plan_next_week, ensure_planning_week, request_week_ballot,
+-- and request_saved_for_planning all call open_cooking_week. Those four do not
+-- declare a weeks variable named found, and their NOT expressions are boolean.
+-- Cooking can still load from a plain weeks select. Rename the row to week_row.
 
 create or replace function private.open_cooking_week(hid uuid)
 returns public.weeks
