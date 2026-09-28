@@ -17,7 +17,7 @@ import {
   RECIPES_NO_HOUSEHOLD,
   RECIPES_PRE_LOCK_DESCRIPTION,
 } from "@/lib/lock-success";
-import { RECIPE_PENDING_BACK, isPendingBotFill } from "@/lib/post-lock-waiting";
+import { isPendingBotFill } from "@/lib/post-lock-waiting";
 import { firstCookableMeal, recipeNightsForWeek } from "@/lib/recipes";
 import { cn } from "@/lib/utils";
 
@@ -78,7 +78,6 @@ function RecipesBody() {
         title="Recipes"
         eyebrow={formatWeekEyebrow(snapshot.week.startsOn, true)}
         backHref="/week"
-        backLabel={RECIPE_PENDING_BACK}
       >
         <PostLockWaitingCard
           mode={snapshot.household.botCheckMode}
