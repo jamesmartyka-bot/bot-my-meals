@@ -30,7 +30,7 @@ Swap a night, propose a replacement (or mark leftovers from an earlier night), a
 
 Day one is that one cooking week. Install does not create a planning week.
 
-After the first ballot is live, the house may also open **one** next week while still cooking this week. Cap is one cooking week + one planning week — no third open week. Home always opens on the cooking week. When both exist, a **This week | Next week** switcher appears. Waiting, Lock, recipes, shopping, Check now, and Wake follow the week on screen. Waiting and shopping titles name **This week** or **Next week** (`Shopping · This week` / `Shopping · Next week`). Each week has its own shopping list — never merge cooking + planning. Saved → **Request for next week** targets the planning week and creates that row if it is missing.
+After the first ballot is live, the house may also open **one** next week while still cooking this week. Cap is one cooking week + one planning week — no third open week. Home always opens on the cooking week. The date strip moves across finished weeks, This week, and Next week when that week exists. Titles stay **This week** or **Next week**. There is no chip row. Waiting, Lock, recipes, shopping, Check now, and Wake follow the week on screen. Waiting and shopping titles name **This week** or **Next week** (`Shopping · This week` / `Shopping · Next week`). Each week has its own shopping list — never merge cooking + planning. Saved → **Request for next week** targets the planning week and creates that row if it is missing.
 
 Each household sets **People per night** (Sun–Sat) under **House**. That count is the serving size for that weekday. Zero is an **Off night** (no dinner planned). One is **Solo night**. Two is **Couple night**. Any other count is **Family night**. Setup asks household size, then nights this week (1–7); active nights default to household size. Admins can change any night (0–12).
 
@@ -208,7 +208,7 @@ Create a routine named exactly **Wake on app event** with a webhook trigger. On 
 
 Empty This week: **Finish house setup** (if incomplete), **Create this week's meals** / **Waiting for your Bot…** (if setup done), or the dual-approve ballot when it lands. While you’re waiting, the page says how often the Bot checks. When the week is settled, that line stays off.
 
-After that first ballot, you can plan next week while still cooking this week. Do not create a planning week during Install. Cap is one cooking week + one planning week. Home stays on cooking. When both exist, use **This week | Next week**. Waiting and shopping titles name the week. Shopping lists stay per week. Saved → **Request for next week** opens the planning week (creates it if missing). Bot checks treat `needs_work` on any open week — a settled cooking week is not idle if next week still needs work.
+After that first ballot, you can plan next week while still cooking this week. Do not create a planning week during Install. Cap is one cooking week + one planning week. Home stays on cooking. The date strip moves across finished weeks, This week, and Next week. There is no chip row. Waiting and shopping titles name the week. Shopping lists stay per week. Saved → **Request for next week** opens the planning week (creates it if missing). Bot checks treat `needs_work` on any open week — a settled cooking week is not idle if next week still needs work.
 
 ### 9. Add the other adult
 
@@ -280,7 +280,7 @@ Empty This week: Finish house setup (if incomplete), Create this week's meals / 
 
 After the first ballot is live, the house may also plan next week while cooking this week. Day-1 Install is still one cooking week — do not create a planning week during setup.
 
-Cap: one cooking week + one planning week. Do not open a third week. Home always opens on the cooking week. When both exist, the app shows a This week | Next week switcher. Waiting, Lock, recipes, shopping, Check now, and Wake are week-scoped. Waiting and shopping titles name This week or Next week (Shopping · This week / Shopping · Next week). Each week has its own shopping list — never merge cooking + planning.
+Cap: one cooking week + one planning week. Do not open a third week. Home always opens on the cooking week. The date strip moves across finished weeks, This week, and Next week when that week exists. There is no chip row. Titles stay This week or Next week. Waiting, Lock, recipes, shopping, Check now, and Wake are week-scoped. Waiting and shopping titles name This week or Next week (Shopping · This week / Shopping · Next week). Each week has its own shopping list — never merge cooking + planning.
 
 Saved → Request for next week always targets the planning week. Create that week if it is missing. Confirm Requested for next week. Do not request a week after next.
 

@@ -60,7 +60,9 @@ function expectDualWeekInstallPaste(paste: string) {
   expect(paste).toMatch(/one cooking week \+ one planning week/);
   expect(paste).toMatch(/Do not open a third week/);
   expect(paste).toMatch(/Home always opens on the cooking week/);
-  expect(paste).toMatch(/This week \| Next week/);
+  expect(paste).toMatch(/date strip/);
+  expect(paste).toMatch(/no chip row/);
+  expect(paste).not.toMatch(/This week \| Next week switcher/);
   expect(paste).toMatch(/week-scoped/);
   expect(paste).toMatch(/Waiting, Lock, recipes, shopping, Check now, and Wake/);
   expect(paste).toMatch(/Shopping · This week/);
@@ -81,7 +83,9 @@ function expectDualWeekInstallPaste(paste: string) {
 function expectDualWeekProductLoop(readme: string) {
   expect(readme).toMatch(/Install does not create a planning week/);
   expect(readme).toMatch(/one cooking week \+ one planning week/);
-  expect(readme).toMatch(/This week \| Next week/);
+  expect(readme).toMatch(/date strip/);
+  expect(readme).toMatch(/no chip row/);
+  expect(readme).not.toMatch(/This week \| Next week/);
   expect(readme).toMatch(/Shopping · This week/);
   expect(readme).toMatch(/Shopping · Next week/);
   expect(readme).toMatch(/never merge cooking \+ planning/);
