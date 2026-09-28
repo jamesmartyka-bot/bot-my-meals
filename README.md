@@ -121,7 +121,7 @@ The app needs **all nine** files under [`supabase/migrations/`](supabase/migrati
 
 Skipping a file (or running them out of order) will break people, lock, off nights, or the post-create setup / invite link. File 6 grants `authenticated` `USAGE` on schema `private` — without it, Create household can succeed while you stay on **Create household**. File 7 adds `/join/<token>` links. File 8 is wizard v2 (`household_size`, `nights_planned`, `postal_code`, `ballot_requests`, no default Trader Joe’s / Smith’s on create). File 9 stores Bot check frequency (`bot_check_mode` defaults to `adaptive`; fixed checks use `bot_check_interval_hours` of 1, 3, or 6).
 
-After those nine, run every later file in [`supabase/migrations/`](supabase/migrations/) in filename order. That includes meal history, store slugs, week chrome, `supabase/migrations/20260928183000_saved_meals.sql` (household Saved meals), and `supabase/migrations/20260928210000_planning_week.sql` (one cooking week plus one next week). See [`docs/saved-meals.md`](docs/saved-meals.md).
+After those nine, run every later file in [`supabase/migrations/`](supabase/migrations/) in filename order. That includes meal history, store slugs, week chrome, `supabase/migrations/20260928183000_saved_meals.sql` (household Saved meals), `supabase/migrations/20260928210000_planning_week.sql` (one cooking week plus one next week), and `supabase/migrations/20260928233000_planning_people_gate.sql` (this next week’s plates and optional special instructions; saving them does not change House defaults). See [`docs/saved-meals.md`](docs/saved-meals.md).
 
 ### 5. Auth: Email on, Confirm email OFF
 
