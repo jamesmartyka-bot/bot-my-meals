@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
   try {
     const facts = await wakeFacts(auth.client, householdId, event);
-    if (!wakeAllowed(event, facts)) return wakeJson({ posted: false });
+    if (!wakeAllowed(event, facts)) return wakeJson({ posted: false, reason: "skipped" });
     const secrets = readBotWakeSecrets();
     const result = await postBotWake({
       event,
@@ -94,10 +94,10 @@ export async function POST(request: Request) {
       key: secrets.key,
       debounce: sharedWakeDebounce,
     });
-    return wakeJson({ posted: result.posted });
+    return wakeJson({ posted: result.posted, reason: result.reason });
   } catch {
     console.warn(`[bot-wake] ${event} soft-fail`);
-    return wakeJson({ posted: false });
+    return wakeJson({ posted: false, reason: "failed" });
   }
 }
 

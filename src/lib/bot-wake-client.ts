@@ -1,6 +1,22 @@
-import type { WakeEvent } from "@/lib/bot-wake";
+import { BOT_WAKE_SAVE_ERROR, type WakeEvent } from "@/lib/bot-wake";
 
-export async function requestBotWake(event: WakeEvent): Promise<boolean> {
+export const WAKE_CLIENT_RESULTS = ["posted", "debounced", "unset", "skipped", "failed"] as const;
+export type WakeClientResult = (typeof WAKE_CLIENT_RESULTS)[number];
+
+function parseWakeClientResult(value: unknown): WakeClientResult {
+  switch (value) {
+    case "posted":
+    case "debounced":
+    case "unset":
+    case "skipped":
+    case "failed":
+      return value;
+    default:
+      return "failed";
+  }
+}
+
+export async function requestBotWake(event: WakeEvent): Promise<WakeClientResult> {
   try {
     const response = await fetch("/api/bot/wake", {
       method: "POST",
@@ -8,11 +24,16 @@ export async function requestBotWake(event: WakeEvent): Promise<boolean> {
       credentials: "same-origin",
       body: JSON.stringify({ event }),
     });
-    if (!response.ok) return false;
+    if (!response.ok) return "failed";
     const body: unknown = await response.json();
-    return body != null && typeof body === "object" && "posted" in body && body.posted === true;
+    if (body != null && typeof body === "object" && "posted" in body && body.posted === true) {
+      return "posted";
+    }
+    const reason =
+      body != null && typeof body === "object" && "reason" in body ? body.reason : "failed";
+    return parseWakeClientResult(reason);
   } catch {
-    return false;
+    return "failed";
   }
 }
 
@@ -41,16 +62,9 @@ export async function saveBotWakeSettings(input: {
         ...(input.key.trim() ? { key: input.key } : {}),
       }),
     });
-    const body: unknown = await response.json().catch(() => null);
-    if (!response.ok) {
-      const message =
-        body != null && typeof body === "object" && "error" in body && typeof body.error === "string"
-          ? body.error
-          : "Could not save that webhook.";
-      return { ok: false, message };
-    }
+    if (!response.ok) return { ok: false, message: BOT_WAKE_SAVE_ERROR };
     return { ok: true };
   } catch {
-    return { ok: false, message: "Could not save that webhook." };
+    return { ok: false, message: BOT_WAKE_SAVE_ERROR };
   }
 }

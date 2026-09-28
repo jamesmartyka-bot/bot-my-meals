@@ -3,18 +3,23 @@ export const BOT_WAKE_DEBOUNCE_MS = 30_000;
 export const BOT_WAKE_SECTION_LABEL = "Wake your Bot";
 export const BOT_WAKE_URL_LABEL = "Bot webhook URL";
 export const BOT_WAKE_URL_HELPER =
-  "From your Bot My Meals Grok Bot: open Routines → the wake routine → copy Webhook URL. Paste here so the app can nudge the bot when you lock or tap Check now.";
+  "In your Bot My Meals Grok Bot, open Routines, open the wake routine, and copy Webhook URL. Paste it here so Lock and Check now can wake your bot.";
 export const BOT_WAKE_URL_PLACEHOLDER = "https://…";
 export const BOT_WAKE_EMPTY =
-  "Optional. Without it, the bot still checks on its schedule (Adaptive or the interval you pick below).";
-export const BOT_WAKE_SAVED = "Saved. Check now will wake your bot when this URL is set.";
+  "Optional. Without it, your bot still checks on its schedule (Adaptive or the interval below).";
+export const BOT_WAKE_SAVED = "Saved. Check now will wake your bot.";
+export const BOT_WAKE_REPLACE = "Saved · Replace";
+export const BOT_WAKE_SAVE_ERROR = "Couldn\u2019t save. Try again.";
+export const BOT_WAKE_SOFT_FAIL = "Couldn\u2019t reach your bot. Try again or message it.";
 export const BOT_WAKE_KEY_LABEL = "Sender key";
 export const BOT_WAKE_KEY_HELPER =
-  "From the same routine, copy key. The app sends it as Authorization: Bearer and keeps it on the Worker.";
+  "If the routine panel shows a sender key, paste it here too. Skip if you don\u2019t see one.";
+export const BOT_WAKE_KEY_PLACEHOLDER = "Paste key";
 
 export const BOT_CHECK_NOW_WAKE_HINT = "Wakes your Bot My Meals bot now.";
 export const POST_LOCK_GET_RECIPES_WAKE_HINT =
   "Wakes your bot to fill recipes and the shopping list.";
+export const RECIPE_PENDING_WAKE_HINT = "Wakes your bot to fill this recipe.";
 
 export const WAKE_EVENTS = ["week_locked", "needs_work", "check_now"] as const;
 export type WakeEvent = (typeof WAKE_EVENTS)[number];

@@ -14,7 +14,7 @@ To let House save those two secrets, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE
 
 The Worker POSTs when the week locks (`week_locked`), when bot status flips to needs work (`needs_work`), and when someone taps **Check now** or **Get recipes now** (`check_now`). The JSON body is only `source`, `event`, `household_host`, and `at`. At most one POST per household per event about every 30 seconds. A failed POST is logged; the schedule still runs, and the screen does not wait on it.
 
-With the URL set, **Check now** says “Wakes your Bot My Meals bot now.” and **Get recipes now** says “Wakes your bot to fill recipes and the shopping list.” Without the URL, those controls still tell someone to message the Bot.
+With the URL set, **Check now** says “Wakes your Bot My Meals bot now.” **Get recipes now** says “Wakes your bot to fill recipes and the shopping list.” A recipe that is still waiting says “Wakes your bot to fill this recipe.” If the wake does not go through, the screen says “Couldn’t reach your bot. Try again or message it.” After you save in House, the page shows “Saved. Check now will wake your bot.” and **Saved · Replace**. It does not show the URL or key again. Without the URL, those hints still tell someone to message the Bot.
 
 ## Create or update the polling routine
 

@@ -5,24 +5,33 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 import { BotCheckFrequency, BotCheckNow } from "@/components/bot-check-frequency";
 import { BotWakeSettings } from "@/components/bot-wake-settings";
-import { PostLockWaitingCard } from "@/components/post-lock-waiting";
+import { PostLockWaitingCard, RecipePendingNotice } from "@/components/post-lock-waiting";
 import {
   BOT_CHECK_NOW_HINT,
   BOT_CHECK_NOW_LABEL,
 } from "@/lib/bot-check";
-import { POST_LOCK_GET_RECIPES_HINT, POST_LOCK_GET_RECIPES_LABEL } from "@/lib/post-lock-waiting";
+import {
+  POST_LOCK_GET_RECIPES_HINT,
+  POST_LOCK_GET_RECIPES_LABEL,
+  RECIPE_PENDING_HINT,
+} from "@/lib/post-lock-waiting";
 import {
   BOT_CHECK_NOW_WAKE_HINT,
   BOT_WAKE_DEBOUNCE_MS,
   BOT_WAKE_EMPTY,
   BOT_WAKE_KEY_HELPER,
   BOT_WAKE_KEY_LABEL,
+  BOT_WAKE_KEY_PLACEHOLDER,
+  BOT_WAKE_REPLACE,
+  BOT_WAKE_SAVE_ERROR,
   BOT_WAKE_SAVED,
   BOT_WAKE_SECTION_LABEL,
+  BOT_WAKE_SOFT_FAIL,
   BOT_WAKE_URL_HELPER,
   BOT_WAKE_URL_LABEL,
   BOT_WAKE_URL_PLACEHOLDER,
   POST_LOCK_GET_RECIPES_WAKE_HINT,
+  RECIPE_PENDING_WAKE_HINT,
   botWakeBody,
   createWakeDebounceStore,
   householdHostFromRequest,
@@ -313,17 +322,34 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(BOT_WAKE_SECTION_LABEL).toBe("Wake your Bot");
     expect(BOT_WAKE_URL_LABEL).toBe("Bot webhook URL");
     expect(BOT_WAKE_URL_HELPER).toBe(
-      "From your Bot My Meals Grok Bot: open Routines → the wake routine → copy Webhook URL. Paste here so the app can nudge the bot when you lock or tap Check now.",
+      "In your Bot My Meals Grok Bot, open Routines, open the wake routine, and copy Webhook URL. Paste it here so Lock and Check now can wake your bot.",
     );
     expect(BOT_WAKE_URL_PLACEHOLDER).toBe("https://…");
     expect(BOT_WAKE_EMPTY).toBe(
-      "Optional. Without it, the bot still checks on its schedule (Adaptive or the interval you pick below).",
+      "Optional. Without it, your bot still checks on its schedule (Adaptive or the interval below).",
     );
-    expect(BOT_WAKE_SAVED).toBe("Saved. Check now will wake your bot when this URL is set.");
+    expect(BOT_WAKE_SAVED).toBe("Saved. Check now will wake your bot.");
+    expect(BOT_WAKE_REPLACE).toBe("Saved · Replace");
+    expect(BOT_WAKE_SAVE_ERROR).toBe("Couldn\u2019t save. Try again.");
+    expect(BOT_WAKE_SOFT_FAIL).toBe("Couldn\u2019t reach your bot. Try again or message it.");
     expect(BOT_CHECK_NOW_WAKE_HINT).toBe("Wakes your Bot My Meals bot now.");
     expect(POST_LOCK_GET_RECIPES_WAKE_HINT).toBe("Wakes your bot to fill recipes and the shopping list.");
+    expect(RECIPE_PENDING_WAKE_HINT).toBe("Wakes your bot to fill this recipe.");
     expect(BOT_WAKE_KEY_LABEL).toBe("Sender key");
-    expect(BOT_WAKE_KEY_HELPER).toContain("Authorization: Bearer");
+    expect(BOT_WAKE_KEY_HELPER).toBe(
+      "If the routine panel shows a sender key, paste it here too. Skip if you don\u2019t see one.",
+    );
+    expect(BOT_WAKE_KEY_PLACEHOLDER).toBe("Paste key");
+    const voice = [
+      BOT_WAKE_URL_HELPER,
+      BOT_WAKE_EMPTY,
+      BOT_WAKE_SAVED,
+      BOT_WAKE_SOFT_FAIL,
+      BOT_CHECK_NOW_WAKE_HINT,
+      POST_LOCK_GET_RECIPES_WAKE_HINT,
+      RECIPE_PENDING_WAKE_HINT,
+    ].join(" ");
+    expect(voice).not.toMatch(/APNs|Instant push|phone push/i);
   });
 
   it("shows the empty paste for an admin and the saved line after the URL is set", () => {
@@ -334,12 +360,17 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(empty).toContain("https://…");
     expect(empty).toContain("Optional. Without it");
     expect(empty).toContain("Sender key");
+    expect(empty).toContain("Paste key");
+    expect(empty).toContain("Skip if you");
     expect(empty).not.toContain("Saved. Check now will wake");
     expect(empty).not.toContain(URL);
 
     const saved = renderToStaticMarkup(createElement(BotWakeSettings, { canEdit: true, configured: true }));
-    expect(saved).toContain("Saved. Check now will wake your bot when this URL is set.");
+    expect(saved).toContain("Saved. Check now will wake your bot.");
+    expect(saved).toContain("Saved · Replace");
     expect(saved).not.toContain("Optional. Without it");
+    expect(saved).not.toContain('id="bot-wake-url"');
+    expect(saved).not.toContain('id="bot-wake-key"');
     expect(saved).not.toContain('value="https://');
 
     const member = renderToStaticMarkup(createElement(BotWakeSettings, { canEdit: false, configured: false }));
@@ -385,6 +416,17 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(waitingOn).toContain("Get recipes now");
     expect(waitingOn).toContain(POST_LOCK_GET_RECIPES_WAKE_HINT);
     expect(waitingOn).not.toContain("isn’t a push");
+
+    const recipeOff = renderToStaticMarkup(createElement(RecipePendingNotice, { wakeConfigured: false }));
+    expect(recipeOff).toContain(RECIPE_PENDING_HINT);
+    expect(recipeOff).not.toContain(RECIPE_PENDING_WAKE_HINT);
+    expect(recipeOff).toContain('data-wake="off"');
+
+    const recipeOn = renderToStaticMarkup(createElement(RecipePendingNotice, { wakeConfigured: true }));
+    expect(recipeOn).toContain(RECIPE_PENDING_WAKE_HINT);
+    expect(recipeOn).not.toContain(RECIPE_PENDING_HINT);
+    expect(recipeOn).toContain('data-wake="on"');
+    expect(recipeOn).not.toMatch(/APNs|Instant push|phone push/i);
   });
 
   it("wires lock, needs-work flips, and House above the check interval", () => {

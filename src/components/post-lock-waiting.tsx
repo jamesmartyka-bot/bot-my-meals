@@ -2,10 +2,11 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useBotWakeConfigured } from "@/components/use-bot-wake";
+import { BallotToast } from "@/components/ballot-toast";
+import { useBotWakeConfigured, useWakeNow } from "@/components/use-bot-wake";
 import { Button } from "@/components/ui/button";
-import { POST_LOCK_GET_RECIPES_WAKE_HINT } from "@/lib/bot-wake";
-import { requestBotWake } from "@/lib/bot-wake-client";
+import { POST_LOCK_GET_RECIPES_WAKE_HINT, RECIPE_PENDING_WAKE_HINT } from "@/lib/bot-wake";
+import type { WakeClientResult } from "@/lib/bot-wake-client";
 import {
   POST_LOCK_BOT_CHECK_SETTINGS,
   POST_LOCK_GET_RECIPES_HINT,
@@ -54,21 +55,14 @@ export function PostLockWaitingDetails({
   showTitle?: boolean;
   showBody?: boolean;
   wakeConfigured?: boolean;
-  onGetRecipes?: () => void | Promise<void>;
+  onGetRecipes?: () => void | Promise<WakeClientResult | void>;
   className?: string;
 }) {
   const now = useCadenceNow(lastCheckedAt);
   const cadence = postLockWaitingCadenceLine({ mode, intervalHours, lastCheckedAt, now });
   const configured = useBotWakeConfigured(wakeConfigured);
-  const [busy, setBusy] = useState(false);
+  const { busy, message, dismiss, wake } = useWakeNow(onGetRecipes);
   const hint = configured ? POST_LOCK_GET_RECIPES_WAKE_HINT : POST_LOCK_GET_RECIPES_HINT;
-
-  const wake = () => {
-    if (busy) return;
-    setBusy(true);
-    const run = onGetRecipes ?? (() => requestBotWake("check_now"));
-    void Promise.resolve(run()).finally(() => setBusy(false));
-  };
 
   return (
     <div className={className}>
@@ -101,6 +95,7 @@ export function PostLockWaitingDetails({
         )}
         <p className="type-meta mt-1 text-muted-foreground">{hint}</p>
       </div>
+      <BallotToast message={message} onDismiss={dismiss} />
       <Link
         href="/settings#bot-check"
         data-slot="post-lock-bot-settings"
@@ -176,14 +171,40 @@ export function PostLockWaitingSheet({
   );
 }
 
-export function RecipePendingNotice() {
+export function RecipePendingNotice({
+  wakeConfigured,
+  onWake,
+}: {
+  wakeConfigured?: boolean;
+  onWake?: () => void | Promise<WakeClientResult | void>;
+}) {
+  const configured = useBotWakeConfigured(wakeConfigured);
+  const { busy, message, dismiss, wake } = useWakeNow(onWake);
+  const hint = configured ? RECIPE_PENDING_WAKE_HINT : RECIPE_PENDING_HINT;
+
   return (
-    <div data-slot="recipe-pending" className="rounded-[14px] bg-card p-5 shadow-card">
+    <div data-slot="recipe-pending" data-wake={configured ? "on" : "off"} className="rounded-[14px] bg-card p-5 shadow-card">
       <h2 className="type-section">{RECIPE_PENDING_TITLE}</h2>
       <p className="type-body mt-2 text-muted-foreground">{RECIPE_PENDING_BODY}</p>
-      <p data-slot="recipe-pending-hint" className="type-meta mt-3 text-muted-foreground">
-        {RECIPE_PENDING_HINT}
-      </p>
+      {configured ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="fat"
+          className="mt-4 w-full"
+          disabled={busy}
+          aria-busy={busy}
+          data-slot="recipe-pending-hint"
+          onClick={wake}
+        >
+          {hint}
+        </Button>
+      ) : (
+        <p data-slot="recipe-pending-hint" className="type-meta mt-3 text-muted-foreground">
+          {hint}
+        </p>
+      )}
+      <BallotToast message={message} onDismiss={dismiss} />
     </div>
   );
 }
