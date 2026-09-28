@@ -134,6 +134,13 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   expect(doc).toMatch(/Wake on app event/);
   expect(doc).not.toMatch(/While waiting, the page says how often the Bot checks/);
   expect(doc).not.toMatch(/While you(?:'|’)re waiting, the page says how often the Bot checks/);
+  expect(doc).not.toMatch(
+    /Bot checks are adaptive\. Start @every 1h while setup is incomplete or work is pending on any open week, otherwise @every 6h\. On each run/,
+  );
+  for (const para of doc.split(/\n+/)) {
+    if (!/@every 1h/.test(para)) continue;
+    expect(para).toMatch(/silent backend fallback|configured|webhook|Wake/);
+  }
   expect(doc).not.toMatch(/grandma/i);
 }
 
