@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { HouseCard } from "@/components/house-card";
+import { useBotWakeConfigured } from "@/components/use-bot-wake";
+import { Button } from "@/components/ui/button";
 import {
   BOT_CHECK_HELPER,
   BOT_CHECK_NOW_HINT,
@@ -14,14 +16,49 @@ import {
   type BotCheckChoice,
   type BotCheckStatus,
 } from "@/lib/bot-check";
+import { BOT_CHECK_NOW_WAKE_HINT } from "@/lib/bot-wake";
+import { requestBotWake } from "@/lib/bot-wake-client";
 import type { BotCheckIntervalHours, BotCheckMode, HouseholdSettingsPatch } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function BotCheckNow({ className }: { className?: string }) {
+export function BotCheckNow({
+  className,
+  wakeConfigured,
+  onCheckNow,
+}: {
+  className?: string;
+  wakeConfigured?: boolean;
+  onCheckNow?: () => void | Promise<void>;
+}) {
+  const configured = useBotWakeConfigured(wakeConfigured);
+  const [busy, setBusy] = useState(false);
+  const hint = configured ? BOT_CHECK_NOW_WAKE_HINT : BOT_CHECK_NOW_HINT;
+
+  const wake = () => {
+    if (busy) return;
+    setBusy(true);
+    const run = onCheckNow ?? (() => requestBotWake("check_now"));
+    void Promise.resolve(run()).finally(() => setBusy(false));
+  };
+
   return (
-    <div data-slot="bot-check-now" className={cn("mt-4", className)}>
-      <p className="type-body font-semibold">{BOT_CHECK_NOW_LABEL}</p>
-      <p className="type-meta mt-1 text-muted-foreground">{BOT_CHECK_NOW_HINT}</p>
+    <div data-slot="bot-check-now" data-wake={configured ? "on" : "off"} className={cn("mt-4", className)}>
+      {configured ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="fat"
+          className="w-full"
+          disabled={busy}
+          aria-busy={busy}
+          onClick={wake}
+        >
+          {BOT_CHECK_NOW_LABEL}
+        </Button>
+      ) : (
+        <p className="type-body font-semibold">{BOT_CHECK_NOW_LABEL}</p>
+      )}
+      <p className="type-meta mt-1 text-muted-foreground">{hint}</p>
     </div>
   );
 }

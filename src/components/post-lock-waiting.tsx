@@ -2,6 +2,10 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useBotWakeConfigured } from "@/components/use-bot-wake";
+import { Button } from "@/components/ui/button";
+import { POST_LOCK_GET_RECIPES_WAKE_HINT } from "@/lib/bot-wake";
+import { requestBotWake } from "@/lib/bot-wake-client";
 import {
   POST_LOCK_BOT_CHECK_SETTINGS,
   POST_LOCK_GET_RECIPES_HINT,
@@ -40,6 +44,8 @@ export function PostLockWaitingDetails({
   lastCheckedAt = null,
   showTitle = true,
   showBody = true,
+  wakeConfigured,
+  onGetRecipes,
   className,
 }: {
   mode: BotCheckMode;
@@ -47,10 +53,22 @@ export function PostLockWaitingDetails({
   lastCheckedAt?: string | null;
   showTitle?: boolean;
   showBody?: boolean;
+  wakeConfigured?: boolean;
+  onGetRecipes?: () => void | Promise<void>;
   className?: string;
 }) {
   const now = useCadenceNow(lastCheckedAt);
   const cadence = postLockWaitingCadenceLine({ mode, intervalHours, lastCheckedAt, now });
+  const configured = useBotWakeConfigured(wakeConfigured);
+  const [busy, setBusy] = useState(false);
+  const hint = configured ? POST_LOCK_GET_RECIPES_WAKE_HINT : POST_LOCK_GET_RECIPES_HINT;
+
+  const wake = () => {
+    if (busy) return;
+    setBusy(true);
+    const run = onGetRecipes ?? (() => requestBotWake("check_now"));
+    void Promise.resolve(run()).finally(() => setBusy(false));
+  };
 
   return (
     <div className={className}>
@@ -65,10 +83,24 @@ export function PostLockWaitingDetails({
       <p data-slot="post-lock-cadence" className="type-meta mt-3 text-foreground">
         {cadence}
       </p>
-      <p data-slot="post-lock-get-recipes" className="type-body mt-4 font-semibold">
-        {POST_LOCK_GET_RECIPES_LABEL}
-      </p>
-      <p className="type-meta mt-1 text-muted-foreground">{POST_LOCK_GET_RECIPES_HINT}</p>
+      <div data-slot="post-lock-get-recipes" data-wake={configured ? "on" : "off"}>
+        {configured ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="fat"
+            className="mt-4 w-full"
+            disabled={busy}
+            aria-busy={busy}
+            onClick={wake}
+          >
+            {POST_LOCK_GET_RECIPES_LABEL}
+          </Button>
+        ) : (
+          <p className="type-body mt-4 font-semibold">{POST_LOCK_GET_RECIPES_LABEL}</p>
+        )}
+        <p className="type-meta mt-1 text-muted-foreground">{hint}</p>
+      </div>
       <Link
         href="/settings#bot-check"
         data-slot="post-lock-bot-settings"
@@ -84,11 +116,13 @@ export function PostLockWaitingCard({
   mode,
   intervalHours,
   lastCheckedAt = null,
+  wakeConfigured,
   className,
 }: {
   mode: BotCheckMode;
   intervalHours: BotCheckIntervalHours | null;
   lastCheckedAt?: string | null;
+  wakeConfigured?: boolean;
   className?: string;
 }) {
   return (
@@ -96,7 +130,12 @@ export function PostLockWaitingCard({
       data-slot="post-lock-waiting"
       className={cn("rounded-[14px] bg-card p-4 shadow-card ring-1 ring-primary/20", className)}
     >
-      <PostLockWaitingDetails mode={mode} intervalHours={intervalHours} lastCheckedAt={lastCheckedAt} />
+      <PostLockWaitingDetails
+        mode={mode}
+        intervalHours={intervalHours}
+        lastCheckedAt={lastCheckedAt}
+        wakeConfigured={wakeConfigured}
+      />
     </div>
   );
 }
@@ -107,12 +146,14 @@ export function PostLockWaitingSheet({
   mode,
   intervalHours,
   lastCheckedAt = null,
+  wakeConfigured,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: BotCheckMode;
   intervalHours: BotCheckIntervalHours | null;
   lastCheckedAt?: string | null;
+  wakeConfigured?: boolean;
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -127,6 +168,7 @@ export function PostLockWaitingSheet({
           lastCheckedAt={lastCheckedAt}
           showTitle={false}
           showBody={false}
+          wakeConfigured={wakeConfigured}
           className="px-4 pb-2"
         />
       </SheetContent>
