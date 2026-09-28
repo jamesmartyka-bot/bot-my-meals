@@ -183,10 +183,23 @@ describe("theme D Clear Sky brand tokens", () => {
     expect(back).toContain("text-foreground");
     expect(back).toContain("mt-2");
     expect(back).toContain("mb-4");
-    expect(back).toContain("dark:bg-white/10");
+    expect(back).toContain("py-3");
+    expect(back).toContain("dark:bg-[rgba(255,255,255,0.08)]");
+    expect(back).toContain("{label}");
     expect(back).not.toContain("←");
     expect(back).not.toContain("text-primary");
     expect(back).not.toContain("type-meta");
+    expect(back).not.toContain("Back to This week");
+    expect(shell).toContain('backLabel = "This week"');
+    expect(shell).not.toContain('backLabel = "Back"');
+
+    for (const label of ["This week", "Recipes", "Past weeks", "House"]) {
+      const swapped = renderToStaticMarkup(createElement(ChromeBackLink, { href: "/week", label }));
+      expect(swapped).toContain(label);
+      expect(swapped).toContain("<svg");
+      expect(swapped).not.toContain("←");
+      expect(swapped).not.toContain("Back to");
+    }
 
     const manifest = readFileSync(path.join(srcRoot, "app/manifest.ts"), "utf8");
     expect(manifest).toContain("BRAND_ICON_192_SRC");

@@ -291,7 +291,9 @@ describe("post-lock waiting copy", () => {
     expect(week).toContain("lockedDinnerTap");
     expect(meal).toContain("RecipePendingNotice");
     expect(meal).toContain('backHref="/week"');
+    expect(meal).toContain('backLabel="This week"');
     expect(meal).not.toContain("Back to This week");
+    expect(recipes).toContain('backLabel="This week"');
     expect(recipes).not.toContain("Back to This week");
     expect(meal).toContain("<RecipeBlock recipe={recipe} servings={meal.servings} />");
     expect(meal).not.toContain("No recipe was saved for this night");

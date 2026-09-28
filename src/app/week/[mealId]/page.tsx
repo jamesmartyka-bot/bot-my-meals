@@ -57,7 +57,7 @@ function MealDetail({ mealId }: { mealId: string }) {
 
   if (!snapshot || !meal) {
     return (
-      <AppShell title="Night" backHref="/week">
+      <AppShell title="Night" backHref="/week" backLabel="This week">
         <p className="type-body text-muted-foreground">That night is not on this week.</p>
       </AppShell>
     );
@@ -94,6 +94,7 @@ function MealDetail({ mealId }: { mealId: string }) {
       title={skipped && readOnly ? EMPTY_DAY_TITLE : meal.title}
       eyebrow={`${weekday} · ${formatNightDate(meal.nightDate)}`}
       backHref="/week"
+      backLabel="This week"
     >
       {weekLocked ? (
         skipped ? (
