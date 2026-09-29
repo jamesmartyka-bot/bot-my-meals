@@ -124,7 +124,8 @@ function expectPlanningPeopleGateInstallPaste(doc: string) {
 }
 
 function expectEditNightsInstallPaste(doc: string) {
-  expect(doc).toMatch(/week chrome has (?:\*\*)?Edit nights/);
+  expect(doc).toMatch(/title row has (?:\*\*)?Edit nights/);
+  expect(doc).toMatch(/same line as the week title, right-aligned/);
   expect(doc).toMatch(/week-scoped (?:\*\*)?People per night/);
   expect(doc).toMatch(/empty (?:\*\*)?Next week(?:\*\*)? gate/);
   expect(doc).toMatch(/re-open/);
