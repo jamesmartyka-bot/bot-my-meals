@@ -89,7 +89,7 @@ Save and let the first build finish.
 **Whose GitHub repo to connect**
 
 - Use **Use this template** or **Fork** on GitHub, then connect **your** copy to Workers Builds.
-- Keep up to date with [timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals): [Keeping up with Tim](#keeping-up-with-tim).
+- Keep up to date with the GitHub repo [https://github.com/timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals): [Keeping up with Tim](#keeping-up-with-tim).
 
 **Whose HTTPS origin**
 
@@ -257,7 +257,7 @@ Row Level Security is household-scoped (`household_id`). Admins manage membershi
 
 ## Keeping up with Tim
 
-Keep up to date with [timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals). You used **Use this template** or **Fork**, so your house runs from **your** GitHub copy. Pull Tim’s updates from that public repo when you want them, then Workers Builds rebuilds and redeploys.
+Keep up to date with the GitHub repo [https://github.com/timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals). That is Tim’s public code — not the Worker hostname and not the marketing site botmymeals.com. You used **Use this template** or **Fork**, so your house runs from **your** GitHub copy. Pull Tim’s updates from that public repo when you want them, then Workers Builds rebuilds and redeploys.
 
 **One-time:** add that public repo as a git remote named `upstream` (skip this if you already have it):
 
@@ -274,7 +274,7 @@ git merge upstream/main
 git push origin main
 ```
 
-If you **Fork**ed on GitHub, you can instead open your fork → **Sync fork**. That pulls Tim’s updates from `timdoes/bot-my-meals` into your `main`. A **Use this template** copy is not a fork, so it has no Sync button — use the commands above.
+If you **Fork**ed on GitHub, you can instead open your fork → **Sync fork**. That pulls Tim’s updates from [https://github.com/timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals) into your `main`. A **Use this template** copy is not a fork, so it has no Sync button — use the commands above.
 
 Cloudflare **Workers Builds** then rebuilds and redeploys Worker `bot-my-meals` when those `main` changes match the watch paths. Let that build finish.
 
@@ -302,7 +302,7 @@ Do this, one decision at a time if you need me to click:
 5) Set only these two public Worker env vars, then redeploy: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Never use the service-role key.
 6) Give me the HTTPS link, walk me through Add to Home Screen, create the household Admin, finish the 7-step setup, then add my partner (share the /join/<token> link; House → People still works).
 
-Keeping up with Tim: keep up to date with timdoes/bot-my-meals. If we Used this template or Forked, pull Tim’s updates from that public repo (add git remote upstream https://github.com/timdoes/bot-my-meals.git — skip if present — then fetch + merge into our main, or GitHub Sync fork). Workers Builds then rebuilds and redeploys. Site URL / Redirect URLs stay our host — not {handle}.botmymeals.com. Never put service-role in git; only the public Supabase URL + anon key.
+Keeping up with Tim: keep up to date with the GitHub repo https://github.com/timdoes/bot-my-meals (not the Worker hostname, not botmymeals.com). If we Used this template or Forked, pull Tim’s updates from that public repo (add git remote upstream https://github.com/timdoes/bot-my-meals.git — skip if present — then fetch + merge into our main, or GitHub Sync fork). Workers Builds then rebuilds and redeploys. Site URL / Redirect URLs stay our host — not {handle}.botmymeals.com. Never put service-role in git; only the public Supabase URL + anon key.
 
 Sign-in: Create account or Sign in with email and password in the app. You stay in the app. Do not finish sign-in by tapping a link in Mail.
 

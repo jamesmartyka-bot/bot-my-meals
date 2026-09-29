@@ -207,7 +207,11 @@ function expectWebhookWaitingInstallPaste(doc: string) {
 
 function expectKeepingUpWithTim(doc: string) {
   expect(doc).toMatch(/Keeping up with Tim/);
-  expect(doc).toMatch(/[Kk]eep up to date with (?:\[)?timdoes\/bot-my-meals/);
+  expect(doc).toMatch(
+    /[Kk]eep up to date with the GitHub repo \[https:\/\/github\.com\/timdoes\/bot-my-meals\]\(https:\/\/github\.com\/timdoes\/bot-my-meals\)/,
+  );
+  expect(doc).toMatch(/not the Worker hostname/);
+  expect(doc).toMatch(/not the marketing site botmymeals\.com/);
   expect(doc).toMatch(/[Pp]ull Tim(?:'|’)s updates/);
   expect(doc).toMatch(/that public repo/);
   expect(doc).toMatch(
@@ -246,7 +250,10 @@ describe("Install docs — email + password + Wake on app event", () => {
     expectWebhookWaitingInstallPaste(readme);
     expectKeepingUpWithTim(readme);
     expect(paste).toMatch(/Keeping up with Tim/);
-    expect(paste).toMatch(/keep up to date with timdoes\/bot-my-meals/);
+    expect(paste).toMatch(
+      /keep up to date with the GitHub repo https:\/\/github\.com\/timdoes\/bot-my-meals/,
+    );
+    expect(paste).toMatch(/not the Worker hostname, not botmymeals\.com/);
     expect(paste).toMatch(/pull Tim(?:'|’)s updates from that public repo/);
     expect(paste).toMatch(
       /git remote upstream https:\/\/github\.com\/timdoes\/bot-my-meals\.git/,
