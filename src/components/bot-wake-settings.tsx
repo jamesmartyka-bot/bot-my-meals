@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BotCheckNow } from "@/components/bot-check-frequency";
 import { HouseCard } from "@/components/house-card";
 import { markBotWakeConfigured, useBotWakeConfigured } from "@/components/use-bot-wake";
 import { Button } from "@/components/ui/button";
@@ -125,6 +126,7 @@ export function BotWakeSettings({
           {error ? <p className="type-meta text-destructive">{error}</p> : null}
         </form>
       ) : null}
+      <BotCheckNow wakeConfigured={configuredOverride} />
     </HouseCard>
   );
 }

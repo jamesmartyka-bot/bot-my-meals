@@ -271,8 +271,6 @@ function WeekBallot() {
     !viewingPast && !showPeopleGate && Boolean(viewedWork?.needs_work) && !pendingFill;
   const waitingCard = (
     <MealsWaitingCard
-      mode={snapshot.household.botCheckMode}
-      intervalHours={snapshot.household.botCheckIntervalHours}
       weekRole={role}
       startsOn={scope?.week.startsOn ?? snapshot.week.startsOn}
       bothOpen={hasPlanning}
@@ -369,8 +367,6 @@ function WeekBallot() {
           {pendingFill ? (
             <div data-slot="week-pending-fill" data-state="pending" className="mb-4">
               <PostLockWaitingCard
-                mode={snapshot.household.botCheckMode}
-                intervalHours={snapshot.household.botCheckIntervalHours}
                 weekRole={role}
                 startsOn={scope?.week.startsOn ?? snapshot.week.startsOn}
                 bothOpen={hasPlanning}
@@ -472,8 +468,6 @@ function WeekBallot() {
       <PostLockWaitingSheet
         open={waitingOpen}
         onOpenChange={setWaitingOpen}
-        mode={snapshot.household.botCheckMode}
-        intervalHours={snapshot.household.botCheckIntervalHours}
         weekRole={role}
         startsOn={scope?.week.startsOn ?? past?.startsOn ?? snapshot.week.startsOn}
         bothOpen={hasPlanning}

@@ -161,11 +161,9 @@ export function grokBotPastePrompt(input: {
     `Shop at: ${stores}.`,
     `Budget: ${budget}.`,
     "Week and plan changes wake the bot when Wake your Bot is set. Write ballot, recipes, and the shopping list back to the site, and stay quiet if nothing changed.",
-    "If there is no webhook, check on an adaptive routine: @every 1h while setup is incomplete or work is pending, otherwise @every 6h.",
-    "On that fallback, read GET /api/bot/status. House → Bot check frequency applies only when Wake is unset. Do the work when needs_work is true, and stay silent when nothing changed.",
+    "On each wake, read GET /api/bot/status. Do the work when needs_work is true on any open week, and stay silent when nothing changed.",
     "fill_pending means this locked week still needs recipes or a shopping list. Write those, and skip a list when nothing needs buying.",
-    "If that fallback setting changes, update your own routine.",
-    "Also keep a webhook routine named Wake on app event. On wake, sync this household (ballot, recipes, shopping list, setup) from the app, and stay quiet if nothing changed.",
+    "Keep a webhook routine named Wake on app event. On wake, sync this household (ballot, recipes, shopping list, setup) from the app, and stay quiet if nothing changed.",
     "For a next-week ballot, use that week's night_headcounts and special_instructions. Empty instructions are fine. Do not change House plate defaults.",
     "Never invent grocery prices. Never claim Smith's cart adds.",
   ].join(" ");

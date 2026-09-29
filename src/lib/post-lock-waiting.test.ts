@@ -248,10 +248,14 @@ describe("post-lock waiting copy", () => {
     );
     expect(card).toContain("Waiting for your Bot");
     expect(card).toContain("Recipes and your shopping list show up after your Bot My Meals bot runs.");
-    expect(card).toContain("Checks about every hour while you\u2019re waiting.");
+    expect(card).not.toContain("Checks about every hour");
+    expect(card).not.toContain("Checks every");
+    expect(card).not.toContain("Next check");
+    expect(card).not.toContain("Adaptive");
     expect(card).toContain("Get recipes now");
     expect(card).toContain("This isn\u2019t a push from the app.");
-    expect(card).toContain('href="/settings#bot-check"');
+    expect(card).toContain('href="/settings#wake-your-bot"');
+    expect(card).not.toContain('href="/settings#bot-check"');
     expect(card).not.toContain("Open shopping list");
     expect(card).not.toContain("See recipes");
     expect(card).not.toContain("No recipe was saved");
@@ -259,8 +263,9 @@ describe("post-lock waiting copy", () => {
     const fixed = renderToStaticMarkup(
       createElement(PostLockWaitingCard, { mode: "fixed", intervalHours: 1, wakeConfigured: false }),
     );
-    expect(fixed).toContain("Checks every 1 hour.");
+    expect(fixed).not.toContain("Checks every 1 hour.");
     expect(fixed).not.toContain("Next check in about");
+    expect(fixed).toContain('href="/settings#wake-your-bot"');
 
     const webhookOn = renderToStaticMarkup(
       createElement(PostLockWaitingCard, {

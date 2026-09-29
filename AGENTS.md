@@ -6,7 +6,7 @@ DIY households deploy this Worker on **their** Cloudflare account and open **the
 
 GitHub Actions is CI-only (`npm ci`, `npm test`, `npm run lint`, `npm run build:worker`). Production deploy is Cloudflare Workers Builds.
 
-When Wake your Bot is set, week and plan changes POST a wake (`week_locked`, `needs_work`, `check_now`) and the bot writes updates back to the site. House hides Bot check frequency while that wake is configured. Adaptive `@every 1h` / `@every 6h` is silent backend fallback only when `BOT_WAKE_WEBHOOK_URL` is unset or the POST fails. A cooking week and one planning week can both be open; a fallback check looks at either. See `docs/bot-routines.md`.
+Week and plan changes POST a wake (`week_locked`, `needs_work`, `check_now`) and the bot writes updates back to the site. House → Wake your Bot is the Settings path. There is no check-frequency control. A cooking week and one planning week can both be open; `needs_work` looks at either. See `docs/bot-routines.md`.
 
 Next.js agent notes: keep the block below when `next dev` rewrites it.
 

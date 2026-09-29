@@ -44,9 +44,6 @@ export const BOT_CHECK_NOW_LABEL = "Check now";
 export const BOT_CHECK_NOW_HINT =
   "Message your Bot My Meals Grok Bot and ask it to sync. This isn\u2019t a push from the app.";
 export const BOT_CHECK_WAITING_ADAPTIVE = "Checks about every hour while you\u2019re waiting.";
-/** Shown in House only while webhook wake is configured. No hour or Adaptive teaching. */
-export const BOT_CHECK_WAKE_PRIMARY =
-  "Week and plan changes wake your bot. Updates show up here.";
 
 export const BOT_CHECK_CHOICES = ["adaptive", "1", "3", "6"] as const;
 export type BotCheckChoice = (typeof BOT_CHECK_CHOICES)[number];
