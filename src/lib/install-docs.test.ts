@@ -49,6 +49,8 @@ function expectWakeInstallPaste(paste: string) {
   expect(paste).toMatch(/Never NEXT_PUBLIC/);
   expect(paste).toMatch(/do not show the full secret again/i);
   expect(paste).toMatch(/fallback/);
+  expect(paste).toMatch(/do not create Adaptive/);
+  expect(paste).not.toMatch(/Polling stays the fallback/);
   expect(paste).not.toMatch(/Copy POST to and key/);
   expect(paste).not.toMatch(/NEXT_PUBLIC_BOT_WAKE/);
   expect(paste).not.toMatch(/grandma/i);
@@ -179,20 +181,28 @@ function expectTitleRowEditNightsWaitingFeedbackPaste(doc: string) {
   expect(doc).toMatch(/another tap is a no-op/);
   expect(doc).toMatch(/refetches briefly/);
   expect(doc).toMatch(/Waiting leaves when content is ready/);
-  expect(doc).toMatch(/does not teach checks every hour|still omits hour \/ Adaptive \/ countdown/);
-  expect(doc).toMatch(/silent backend fallback/);
+  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+  expect(doc).not.toMatch(/silent backend fallback/);
+  expect(doc).not.toMatch(/Polling stays the fallback/);
+  expect(doc).not.toMatch(/Start that backend routine @every 1h/);
   expect(doc).not.toMatch(/grandma/i);
 }
 
 function expectWebhookWaitingInstallPaste(doc: string) {
   expect(doc).toMatch(/configured/);
-  expect(doc).toMatch(/does not teach checks every hour/);
-  expect(doc).toMatch(/Adaptive cadence/);
-  expect(doc).toMatch(/countdown-to-next-poll/);
   expect(doc).toMatch(/Your bot was notified/);
-  expect(doc).toMatch(/silent backend fallback/);
-  expect(doc).toMatch(/When Wake is unset/);
   expect(doc).toMatch(/Wake on app event/);
+  expect(doc).toMatch(/webhook trigger/);
+  expect(doc).toMatch(/message the Bot|message the bot/);
+  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+  expect(doc).not.toMatch(/silent backend fallback/);
+  expect(doc).not.toMatch(/When Wake is unset/);
+  expect(doc).not.toMatch(/Polling stays the fallback/);
+  expect(doc).not.toMatch(/cadence\.mode/);
+  expect(doc).not.toMatch(/House → Bot check frequency/);
+  expect(doc).not.toMatch(/Start that backend routine @every 1h/);
+  expect(doc).not.toMatch(/Adaptive cadence/);
+  expect(doc).not.toMatch(/countdown-to-next-poll/);
   expect(doc).not.toMatch(/While waiting, the page says how often the Bot checks/);
   expect(doc).not.toMatch(/While you(?:'|’)re waiting, the page says how often the Bot checks/);
   expect(doc).not.toMatch(
@@ -200,7 +210,7 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   );
   for (const para of doc.split(/\n+/)) {
     if (!/@every 1h/.test(para)) continue;
-    expect(para).toMatch(/silent backend fallback|configured|webhook|Wake/);
+    expect(para).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
   }
   expect(doc).not.toMatch(/grandma/i);
 }
