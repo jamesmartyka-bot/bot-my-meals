@@ -51,6 +51,7 @@ Do these in order. Phones stay in sync only after a real Worker, a new Supabase 
 1. Deploy (or already know the **final HTTPS origin** phones will open) **before** setting Supabase Site URL.
 2. Finish Auth + the two public env vars **before** creating the Admin or adding a partner.
 3. **Add to Home Screen** can happen as soon as the HTTPS URL works (Safari **Share → Add to Home Screen**). Do not wait for household creation. Sign-in and adding people still need email + password + env.
+4. Save **Wake on app event** in **House → Wake your Bot** **before** **Create this week's meals** (before the first ballot).
 
 Missing, blank, or invalid `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` is an **incomplete install**. The app **builds** without those values, but every route shows the first-run **setup gate** (“Set up the real house”) until they are set and the Worker is rebuilt / redeployed. There is no localStorage household fallback.
 
@@ -185,7 +186,7 @@ Auth + env first. Then, on that phone:
 2. Enter your email and a password of at least 8 characters. You stay in this app — no mail to open.
 3. After that you will see **Create household**.
 4. Enter a household name and tap **Create household**.
-5. Walk the **7-step house setup** below (progress: **Setup · step N of 7**, saved on the household). There is no Seed / sample week.
+5. Do **not** tap **Create this week's meals** yet. Save Wake first ([step 9](#9-wake-on-app-event-required-before-first-ballot)), then walk house setup.
 
 That person becomes the first **Admin**. Nobody is hard-coded. There is no Tim or Rose to recreate.
 
@@ -193,11 +194,20 @@ If Create household seems to work (or fails quietly) but you stay on **Create ho
 
 A household is a **Supabase row** on this same Worker — not a second Worker.
 
-#### After Create household: house setup
+### 9. Wake on app event (required before first ballot)
 
-After **Create account**, you are signed in on this phone.
+Required for every household — not optional. Same Install path as the Worker, Supabase, and the two public env vars. Do this **before** **Create this week's meals** / the first ballot. Without this webhook created and saved, setup is incomplete.
 
-Walk through house setup (no Seed / sample week). Progress is **Setup · step N of 7**.
+1. Create a routine named exactly **Wake on app event** with a webhook trigger.
+2. On wake it syncs ballot / recipes / shopping list / setup for the week that needs work, and stays quiet if nothing changed.
+3. Copy **Webhook URL** (the panel may say **POST to**) and the **sender key** if the panel shows one.
+4. Paste them in **House → Wake your Bot**, or set Worker secrets `BOT_WAKE_WEBHOOK_URL` and optional `BOT_WAKE_WEBHOOK_KEY`. Never `NEXT_PUBLIC_` for these. After save, the app does not show the full secret again.
+
+When Wake is configured, Waiting / Check now is wake / **Your bot was notified** only. Without the webhook saved, **Check now** still means **message the Bot** — setup is still incomplete. Install must create and save this webhook. **Do not** create Adaptive / `@every 1h` / `@every 6h` bot-check routines.
+
+#### Then walk house setup through Create this week's meals
+
+After Wake is saved, walk through house setup (no Seed/sample week). Progress is **Setup · step N of 7**.
 
 1. **Invite people** — share `https://<our-host>/join/<token>` via share sheet (invite links only). Partner opens the link, then creates an account with their own email and password (or signs in). There is no shared household password.
 2. **How many people?** — household size stepper.
@@ -207,24 +217,11 @@ Walk through house setup (no Seed / sample week). Progress is **Setup · step N 
 6. **Optional** weekly meal budget (or skip).
 7. Tap **Create this week's meals** — app writes a ballot request and shows **Waiting for your Bot…** until the ballot appears. **Copy paste for your Grok Bot** is DIY fallback only (collapsed).
 
-**Wake on app event** is required Install [step 9](#9-wake-on-app-event-required) — same path for every household. Create the webhook and save it before you treat setup as done. Without it, setup is incomplete.
-
 Empty This week: **Finish house setup** (if incomplete), **Create this week's meals** / **Waiting for your Bot…** (if setup done), or the dual-approve ballot when it lands. When **House → Wake your Bot** / `BOT_WAKE` is configured (`configured` true), Waiting / Check now is wake / instant / **Your bot was notified** only.
 
 After that first ballot, you can plan next week while still cooking this week. Do not create a planning week during Install. Cap is one cooking week + one planning week. Home stays on cooking. Change week with a **horizontal swipe** on the date strip (or the optional edge ‹ ›). Title labels stay **This week** / **Next week** / a past date range — they are status, not the switcher. There is no chip row. Title and strip sit flush (0 gap). Past via the strip is titles only; **House → Past weeks** still works. With no planning week yet, a future swipe or › from cooking creates **Next week** (same create path as **Plan next week** / Saved Request), lands on **People per night** first (optional **Special instructions** on the same step; empty OK), then that week’s ballot. Toast: **Next week started. Set people per night.** House **People per night** stays the template for new weeks only. Used when you start a new week. To change nights on This week or Next week, open that week and tap **Edit nights**. Saving House defaults does not resize/rewrite open cooking or planning week headcounts. On **This week** or **Next week** (when edit is allowed), the title row has **Edit nights** on the same line as the week title, right-aligned — not a free-floating chrome chip below the title. It opens week-scoped **People per night** for that week (same control language as the empty **Next week** gate). The **Locked** chip still hugs the title. Date strip stays flush under the title row (0 gap). Hidden when locked, past, or the empty People gate is already the body. It works after a ballot or meals exist (re-open), not only the empty planning gate. Save updates that week’s plates/meals only — it does not rewrite House defaults. A locked week has no **Edit nights** until **Unlock** on the viewed week. Past weeks: no **Edit nights**. **Special instructions** stay planning-only on that editor (omit on cooking unless the week already has a note). After **Edit nights** Save, re-saved `night_headcounts` (plus `special_instructions` on planning) are what Meal Ops / the bot reads for that `week_id`. Closing **Edit nights** or the People gate returns to that week with a **Waiting** card immediately when the bot still has work (ballot, blank new night, portions, swap). A new blank night shows **Waiting for a meal…** (not “No dinner”). Waiting and shopping titles name the week. Shopping lists stay per week. Saved → **Request for next week** opens the planning week (creates it if missing). Wake treats `needs_work` on any open week — a settled cooking week is not idle if next week still needs work.
 
 **Check now** / **Get recipes now** shows **Checking…** / **Waking…** until the request settles, then **Your bot was notified…** (recipes keep the recipes-and-list line). Soft-fail re-enables the button. With no webhook, setup is incomplete — the tap asks you to message the bot and does not claim a wake. Install must still create and save the webhook. **Do not** create Adaptive / `@every 1h` / `@every 6h` bot-check routines. After a successful wake, ~30s cooldown (**Bot notified**) so another tap is a no-op. While work is pending, the week refetches briefly then Waiting leaves when content is ready. When Wake / `BOT_WAKE` is configured, Waiting / Check now is wake / **Your bot was notified** only.
-
-### 9. Wake on app event (required)
-
-Required for every household — not optional. Same Install path as the Worker, Supabase, and the two public env vars. Without this webhook created and saved, setup is incomplete.
-
-1. Create a routine named exactly **Wake on app event** with a webhook trigger.
-2. On wake it syncs ballot / recipes / shopping list / setup for the week that needs work, and stays quiet if nothing changed.
-3. Copy **Webhook URL** (the panel may say **POST to**) and the **sender key** if the panel shows one.
-4. Paste them in **House → Wake your Bot**, or set Worker secrets `BOT_WAKE_WEBHOOK_URL` and optional `BOT_WAKE_WEBHOOK_KEY`. Never `NEXT_PUBLIC_` for these. After save, the app does not show the full secret again.
-
-When Wake is configured, Waiting / Check now is wake / **Your bot was notified** only. Without the webhook saved, **Check now** still means **message the Bot** — setup is still incomplete. Install must create and save this webhook. **Do not** create Adaptive / `@every 1h` / `@every 6h` bot-check routines.
 
 ### 10. Add the other adult
 
@@ -247,7 +244,7 @@ Row Level Security is household-scoped (`household_id`). Admins manage membershi
 ## Gotchas
 
 - **Missing env = incomplete install.** Blank, unset, or invalid `NEXT_PUBLIC_*` shows the **setup gate** on every route. That is not a household. Do not stop at “try it without Supabase.” There is no localStorage household fallback.
-- **Wake webhook is required.** Without **House → Wake your Bot** / `BOT_WAKE` saved, setup is incomplete. **Check now** still means message the Bot. Do not skip [step 9](#9-wake-on-app-event-required).
+- **Wake webhook is required before Create this week's meals.** Without **House → Wake your Bot** / `BOT_WAKE` saved, setup is incomplete. **Check now** still means message the Bot. Do not skip [step 9](#9-wake-on-app-event-required-before-first-ballot).
 - **Stuck on Create household.** Create household can look like it worked (or fail with no message) while you never enter This week / House. Likely cause: migrations incomplete — `authenticated` needs `USAGE` on schema `private`. Run every file in [step 4](#4-run-every-migration-in-filename-order) in order, including `20260917120000_grant_private_schema_usage.sql`, then hard-refresh.
 - **Vars need a rebuild.** After setting the two public keys, rebuild/redeploy so Next inlines them.
 - **`npm run deploy` is not the easy household path.** If you already develop: it only promotes production from `main`; any other branch → preview upload only (`wrangler versions upload`).
@@ -310,15 +307,15 @@ Do this, one decision at a time if you need me to click:
 3) Run every file in supabase/migrations/ in filename order (SQL editor or supabase db push).
 4) Turn on Email sign-in. Turn Confirm email OFF so people create an account and stay in the app (important on iPhone Home Screen). Set Site URL to our HTTPS origin, and add /auth/callback and /login/new-password (our workers.dev or our own domain — not {handle}.botmymeals.com). People use email + password in the app — not a magic link. If a password minimum is shown, set it to at least 8. Optional later: custom SMTP + a code in the email template ({{ .Token }}) for sign-in codes. Do not turn on Apple or Google for Install. Passkeys later. Do not require custom SMTP to install.
 5) Set only these two public Worker env vars, then redeploy: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Never use the service-role key.
-6) Give me the HTTPS link, walk me through Add to Home Screen, create the household Admin, finish the 7-step setup.
-7) Create a routine named Wake on app event with a webhook trigger. Required for every household — not optional. Same path as Worker / Supabase / env. On wake, sync ballot / recipes / shopping list / setup for the week that needs work; stay quiet if nothing changed. Copy Webhook URL (the panel may say POST to) and the sender key if the panel shows one. Paste them into House → Wake your Bot, or set Worker secrets BOT_WAKE_WEBHOOK_URL and optional BOT_WAKE_WEBHOOK_KEY. Never NEXT_PUBLIC for these. After save, do not show the full secret again. The Worker sends the key as Authorization: Bearer. Without wake configured, setup is incomplete — Check now still means message the Bot, but Install must still create and save the webhook. Do not create Adaptive / @every 1h / @every 6h bot-check routines.
-8) Add my partner (share the /join/<token> link; House → People still works).
+6) Give me the HTTPS link, walk me through Add to Home Screen, and create the household Admin. Do not tap Create this week's meals yet.
+7) Create a routine named Wake on app event with a webhook trigger. Required for every household — not optional. Same path as Worker / Supabase / env. Required before Create this week's meals / the first ballot. On wake, sync ballot / recipes / shopping list / setup for the week that needs work; stay quiet if nothing changed. Copy Webhook URL (the panel may say POST to) and the sender key if the panel shows one. Paste them into House → Wake your Bot, or set Worker secrets BOT_WAKE_WEBHOOK_URL and optional BOT_WAKE_WEBHOOK_KEY. Never NEXT_PUBLIC for these. After save, do not show the full secret again. The Worker sends the key as Authorization: Bearer. Without wake configured, setup is incomplete — Check now still means message the Bot, but Install must still create and save the webhook. Do not create Adaptive / @every 1h / @every 6h bot-check routines.
+8) Then walk house setup through Create this week's meals. Add my partner (share the /join/<token> link; House → People still works).
 
 Keeping up with Tim: keep up to date with the GitHub repo https://github.com/timdoes/bot-my-meals (not the Worker hostname, not botmymeals.com). If we Used this template or Forked, pull Tim’s updates from that public repo (add git remote upstream https://github.com/timdoes/bot-my-meals.git — skip if present — then fetch + merge into our main, or GitHub Sync fork). Workers Builds then rebuilds and redeploys. Site URL / Redirect URLs stay our host — not {handle}.botmymeals.com. Never put service-role in git; only the public Supabase URL + anon key.
 
 Sign-in: Create account or Sign in with email and password in the app. You stay in the app. Do not finish sign-in by tapping a link in Mail.
 
-After Create household, walk through house setup (no Seed/sample week):
+After Create household, create Wake on app event and paste Webhook URL into House → Wake your Bot (required before Create this week's meals / the first ballot). Then walk through house setup (no Seed/sample week):
 1) Invite people — share https://<our-host>/join/<token> via share sheet (invite links only). Partner opens the link, then creates their own account with their email and password, or signs in. There is no shared household password.
 2) How many people? — household size stepper.
 3) Which nights? — Sun–Sat toggles, all on by default. Easy off per day.

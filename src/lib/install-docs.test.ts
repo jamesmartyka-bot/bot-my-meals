@@ -55,6 +55,13 @@ function expectWakeInstallPaste(paste: string) {
   expect(paste).toMatch(/setup is incomplete/);
   expect(paste).toMatch(/Install must still create and save the webhook/);
   expect(paste).toMatch(/7\) Create a routine named Wake on app event/);
+  expect(paste).toMatch(/Required before Create this week's meals/);
+  expect(paste).toMatch(/Do not tap Create this week's meals yet/);
+  expect(paste).toMatch(/Then walk house setup through Create this week's meals/);
+  const wakeStepAt = paste.indexOf("7) Create a routine named Wake on app event");
+  const createMealsAt = paste.indexOf("Tap Create this week's meals");
+  expect(wakeStepAt).toBeGreaterThan(-1);
+  expect(createMealsAt).toBeGreaterThan(wakeStepAt);
   expect(paste).not.toMatch(/Polling stays the fallback/);
   expect(paste).not.toMatch(/DIY alternative/);
   expect(paste).not.toMatch(/does not require creating a Grok Bot/);
@@ -205,6 +212,8 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   expect(doc).toMatch(/setup is incomplete/);
   expect(doc).toMatch(/required for every household|Required for every household/);
   expect(doc).toMatch(/not optional/);
+  expect(doc).toMatch(/before Create this week's meals/);
+  expect(doc).toMatch(/before first ballot|first ballot/);
   expect(doc).not.toMatch(/silent backend fallback/);
   expect(doc).not.toMatch(/When Wake is unset/);
   expect(doc).not.toMatch(/Polling stays the fallback/);
@@ -314,8 +323,13 @@ describe("Install docs — email + password + Wake on app event", () => {
     expect(paste).not.toMatch(/no store cart-add claims/);
 
     expect(readme).toMatch(/Wake on app event/);
-    expect(readme).toMatch(/### 9\. Wake on app event \(required\)/);
+    expect(readme).toMatch(/### 9\. Wake on app event \(required before first ballot\)/);
     expect(readme).toMatch(/### 10\. Add the other adult/);
+    expect(readme).toMatch(/Do \*\*not\*\* tap \*\*Create this week's meals\*\* yet/);
+    const setupSection = readme.slice(readme.indexOf("## Setup"));
+    expect(setupSection.indexOf("### 9. Wake on app event")).toBeLessThan(
+      setupSection.indexOf("Tap **Create this week's meals**"),
+    );
     expect(readme).toMatch(/Webhook URL/);
     expect(readme).toMatch(/House → Wake your Bot/);
     expect(readme).toMatch(/BOT_WAKE_WEBHOOK_URL/);
@@ -367,10 +381,12 @@ describe("Install docs — email + password + Wake on app event", () => {
     expectTitleRowEditNightsWaitingFeedbackPaste(readme);
     expectWebhookWaitingInstallPaste(paste);
 
-    const setupAt = paste.indexOf("After Create household, walk through house setup");
+    const wakeAt = paste.indexOf("create Wake on app event and paste Webhook URL");
+    const setupAt = paste.indexOf("walk through house setup");
     const firstBallotAt = paste.indexOf("Tap Create this week's meals");
     const dualWeekAt = paste.indexOf("After the first ballot is live");
-    expect(setupAt).toBeGreaterThan(-1);
+    expect(wakeAt).toBeGreaterThan(-1);
+    expect(setupAt).toBeGreaterThan(wakeAt);
     expect(firstBallotAt).toBeGreaterThan(setupAt);
     expect(dualWeekAt).toBeGreaterThan(firstBallotAt);
 
