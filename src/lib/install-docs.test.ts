@@ -49,8 +49,15 @@ function expectWakeInstallPaste(paste: string) {
   expect(paste).toMatch(/Never NEXT_PUBLIC/);
   expect(paste).toMatch(/do not show the full secret again/i);
   expect(paste).toMatch(/fallback/);
-  expect(paste).toMatch(/do not create Adaptive/);
+  expect(paste).toMatch(/do not create Adaptive/i);
+  expect(paste).toMatch(/Required for every household/);
+  expect(paste).toMatch(/not optional/);
+  expect(paste).toMatch(/setup is incomplete/);
+  expect(paste).toMatch(/Install must still create and save the webhook/);
+  expect(paste).toMatch(/7\) Create a routine named Wake on app event/);
   expect(paste).not.toMatch(/Polling stays the fallback/);
+  expect(paste).not.toMatch(/DIY alternative/);
+  expect(paste).not.toMatch(/does not require creating a Grok Bot/);
   expect(paste).not.toMatch(/Copy POST to and key/);
   expect(paste).not.toMatch(/NEXT_PUBLIC_BOT_WAKE/);
   expect(paste).not.toMatch(/grandma/i);
@@ -181,7 +188,7 @@ function expectTitleRowEditNightsWaitingFeedbackPaste(doc: string) {
   expect(doc).toMatch(/another tap is a no-op/);
   expect(doc).toMatch(/refetches briefly/);
   expect(doc).toMatch(/Waiting leaves when content is ready/);
-  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/i);
   expect(doc).not.toMatch(/silent backend fallback/);
   expect(doc).not.toMatch(/Polling stays the fallback/);
   expect(doc).not.toMatch(/Start that backend routine @every 1h/);
@@ -194,10 +201,16 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   expect(doc).toMatch(/Wake on app event/);
   expect(doc).toMatch(/webhook trigger/);
   expect(doc).toMatch(/message the Bot|message the bot/);
-  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+  expect(doc).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/i);
+  expect(doc).toMatch(/setup is incomplete/);
+  expect(doc).toMatch(/required for every household|Required for every household/);
+  expect(doc).toMatch(/not optional/);
   expect(doc).not.toMatch(/silent backend fallback/);
   expect(doc).not.toMatch(/When Wake is unset/);
   expect(doc).not.toMatch(/Polling stays the fallback/);
+  expect(doc).not.toMatch(/Ask your Grok Bot \(optional\)/);
+  expect(doc).not.toMatch(/does \*\*not\*\* require creating a Grok Bot/);
+  expect(doc).not.toMatch(/DIY alternative/);
   expect(doc).not.toMatch(/cadence\.mode/);
   expect(doc).not.toMatch(/House → Bot check frequency/);
   expect(doc).not.toMatch(/Start that backend routine @every 1h/);
@@ -210,7 +223,7 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   );
   for (const para of doc.split(/\n+/)) {
     if (!/@every 1h/.test(para)) continue;
-    expect(para).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+    expect(para).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/i);
   }
   expect(doc).not.toMatch(/grandma/i);
 }
@@ -301,9 +314,15 @@ describe("Install docs — email + password + Wake on app event", () => {
     expect(paste).not.toMatch(/no store cart-add claims/);
 
     expect(readme).toMatch(/Wake on app event/);
+    expect(readme).toMatch(/### 9\. Wake on app event \(required\)/);
+    expect(readme).toMatch(/### 10\. Add the other adult/);
     expect(readme).toMatch(/Webhook URL/);
     expect(readme).toMatch(/House → Wake your Bot/);
     expect(readme).toMatch(/BOT_WAKE_WEBHOOK_URL/);
+    expect(readme).toMatch(/required for every household|Required for every household/);
+    expect(readme).toMatch(/setup is incomplete/);
+    expect(readme).not.toMatch(/Ask your Grok Bot \(optional\)/);
+    expect(readme).not.toMatch(/does \*\*not\*\* require creating a Grok Bot/);
     expect(readme).not.toMatch(/grandma/i);
 
     expect(routines).toMatch(/Wake on app event/);

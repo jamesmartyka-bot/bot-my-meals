@@ -515,7 +515,7 @@ describe("bot check migration and shared-bot docs", () => {
     expect(docs).toMatch(/Never invent grocery prices/);
     expect(docs).not.toMatch(/Force sync/);
     expect(readme).toMatch(/Wake on app event/);
-    expect(readme).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/);
+    expect(readme).toMatch(/do (?:\*\*)?not(?:\*\*)? create Adaptive/i);
     expect(readme).not.toMatch(/House → Bot check frequency/);
     expect(readme).not.toMatch(/silent backend fallback/);
     expect(readme).not.toMatch(/about every hour while/);
