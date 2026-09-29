@@ -398,10 +398,30 @@ describe("Wake your Bot settings and gated hints", () => {
         mode: "adaptive",
         intervalHours: null,
         canEdit: true,
+        wakeConfigured: false,
         onChange: async () => undefined,
       }),
     );
+    expect(settings).toContain("Bot check frequency");
+    expect(settings).toContain("Adaptive (recommended)");
     expect(settings).toContain("This isn’t a push from the app.");
+
+    const settingsOn = renderToStaticMarkup(
+      createElement(BotCheckFrequency, {
+        mode: "adaptive",
+        intervalHours: null,
+        canEdit: true,
+        wakeConfigured: true,
+        onChange: async () => undefined,
+      }),
+    );
+    expect(settingsOn).toContain("Week and plan changes wake your bot. Updates show up here.");
+    expect(settingsOn).toContain("Wakes your Bot My Meals bot now.");
+    expect(settingsOn).not.toContain("Bot check frequency");
+    expect(settingsOn).not.toContain("Adaptive");
+    expect(settingsOn).not.toContain("Every hour");
+    expect(settingsOn).not.toContain("Every 6 hours");
+    expect(settingsOn).not.toContain("every 6 hours");
 
     const waitingOff = renderToStaticMarkup(
       createElement(PostLockWaitingCard, { mode: "adaptive", intervalHours: null, wakeConfigured: false }),
@@ -449,6 +469,11 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(provider).toContain('requestBotWake("week_locked")');
     expect(provider).toContain('requestBotWake("needs_work")');
     expect(provider).toContain("shouldWakeNeedsWork");
+    expect(provider).toContain("wakeWeekOrPlanChange");
+    expect(provider).toMatch(/saveWeekPeople:[\s\S]*wakeWeekOrPlanChange/);
+    expect(provider).toMatch(/savePlanningPeople:[\s\S]*wakeWeekOrPlanChange/);
+    expect(provider).toMatch(/planNextWeek:[\s\S]*wakeWeekOrPlanChange/);
+    expect(provider).toMatch(/requestWeekBallot:[\s\S]*wakeWeekOrPlanChange/);
     expect(settings.indexOf("BotWakeSettings")).toBeLessThan(settings.indexOf("<BotCheckFrequency"));
     expect(secrets).toContain("BOT_WAKE_WEBHOOK_URL");
     expect(secrets).toContain("BOT_WAKE_WEBHOOK_KEY");

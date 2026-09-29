@@ -1,6 +1,6 @@
-# Household bot check routine
+# Household bot wake
 
-Shared Grok Bots poll this household’s Worker on an adaptive schedule. That poll is the fallback when no webhook is set, and when a wake POST fails.
+Shared Grok Bots wake when this household’s app POSTs. Week lock, plan changes, and Check now are the events. The bot writes ballot, recipes, and the shopping list back to the site. A poll is silent backend fallback only when no webhook is set, or when a wake POST fails.
 
 ## Wake on app event
 
@@ -10,22 +10,24 @@ Shared Grok Bots poll this household’s Worker on an adaptive schedule. That po
 
 To let House save those two secrets, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` on the Worker once (Workers Scripts edit for `bot-my-meals`). Without them, use the DIY `wrangler secret put` commands in step 3.
 
-The Worker POSTs when the week locks (`week_locked`), when bot status flips to needs work (`needs_work`), and when someone taps **Check now** or **Get recipes now** (`check_now`). The JSON body is only `source`, `event`, `household_host`, and `at`. At most one POST per household per event about every 30 seconds. A failed POST is logged; the schedule still runs, and the screen does not wait on it.
+The Worker POSTs when the week locks (`week_locked`), when a week or plan change still needs the bot (`needs_work`, including a change while work was already waiting), and when someone taps **Check now** or **Get recipes now** (`check_now`). The JSON body is only `source`, `event`, `household_host`, and `at`. At most one POST per household per event about every 30 seconds. A failed POST is logged; the screen does not wait on it. The bot’s updates show up on the site.
 
-With the URL set, **Check now** says “Wakes your Bot My Meals bot now.” **Get recipes now** says “Wakes your bot to fill recipes and the shopping list.” On next week those hints say **next week**. A recipe that is still waiting says “Wakes your bot to fill this recipe.” On next week it says next week. If the wake does not go through, the screen says “Couldn’t reach your bot. Try again or message it.” After you save in House, the page shows “Saved. Check now will wake your bot.” and **Saved · Replace**. It does not show the URL or key again. Without the URL, those hints still tell someone to message the Bot, and Waiting may say how often the bot checks. When the webhook URL is set (`configured` true), Waiting does not teach checks every hour, Adaptive cadence, or a countdown-to-next-poll — voice is wake / instant / **Your bot was notified.** Adaptive `@every 1h` / `@every 6h` stays a silent backend fallback when the webhook is unset or the POST fails. Waiting titles name **This week** or **Next week** when both weeks are open. Shopping list titles are **Shopping · This week** or **Shopping · Next week**. Someone changes week with a **horizontal swipe** on the date strip (or the optional edge ‹ ›) — not a chip row. From This week, that future swipe or › creates **Next week** when it is missing, lands there, and asks **People per night** first (all 7 nights, Off / Solo / Couple / Family, prefill from House defaults, optional **Special instructions** on the same step; empty OK) before any ballot. Save needs plates above zero on at least one night. Toast: **Next week started. Set people per night.** House People per night stays the template for new weeks only. It cannot open a week after next. Title labels **This week** / **Next week** are status, not the switcher.
+With the URL set, **Check now** says “Wakes your Bot My Meals bot now.” **Get recipes now** says “Wakes your bot to fill recipes and the shopping list.” On next week those hints say **next week**. A recipe that is still waiting says “Wakes your bot to fill this recipe.” On next week it says next week. If the wake does not go through, the screen says “Couldn’t reach your bot. Try again or message it.” After you save in House, the page shows “Saved. Check now will wake your bot.” and **Saved · Replace**. It does not show the URL or key again. Without the URL, those hints still tell someone to message the Bot, and Waiting may say how often the bot checks. When the webhook URL is set (`configured` true), Waiting does not teach checks every hour, Adaptive cadence, or a countdown-to-next-poll — voice is wake / instant / **Your bot was notified.** House hides Bot check frequency so Wake your Bot is how updates arrive. Adaptive `@every 1h` / `@every 6h` stays a silent backend fallback when the webhook is unset or the POST fails. Waiting titles name **This week** or **Next week** when both weeks are open. Shopping list titles are **Shopping · This week** or **Shopping · Next week**. Someone changes week with a **horizontal swipe** on the date strip (or the optional edge ‹ ›) — not a chip row. From This week, that future swipe or › creates **Next week** when it is missing, lands there, and asks **People per night** first (all 7 nights, Off / Solo / Couple / Family, prefill from House defaults, optional **Special instructions** on the same step; empty OK) before any ballot. Save needs plates above zero on at least one night. Toast: **Next week started. Set people per night.** House People per night stays the template for new weeks only. It cannot open a week after next. Title labels **This week** / **Next week** are status, not the switcher.
 
-## Create or update the polling routine
+## Silent poll fallback
 
-Adaptive is the default.
+Use this only when the webhook URL is unset or a wake POST fails. While Wake your Bot is saved, House hides Bot check frequency and Waiting does not teach an hour schedule.
 
-- Start `@every 1h` when setup is incomplete or work is pending on **any open week** (this week or next week: ballot, meal, portion, a plate/people change the bot still needs to apply, or a locked week still missing recipes or that week’s shopping list).
+Adaptive is the fallback default.
+
+- On this webhook-unset fallback, start `@every 1h` when setup is incomplete or work is pending on **any open week** (this week or next week: ballot, meal, portion, a plate/people change the bot still needs to apply, or a locked week still missing recipes or that week’s shopping list).
 - Otherwise `@every 6h` (nothing waiting). A settled cooking week does not hide a next-week ballot.
-- If the owner picks a fixed check in **House → Bot check frequency**, keep that interval: `@every 1h`, `@every 3h`, or `@every 6h`.
+- If Wake is unset and the owner picks a fixed check in **House → Bot check frequency**, keep that interval: `@every 1h`, `@every 3h`, or `@every 6h`.
 
 On each run:
 
 1. `GET /api/bot/status` with a household member’s Supabase access token: `Authorization: Bearer <access_token>`. Row Level Security scopes the read to that household. The body is small: `needs_work`, `reason`, and `cadence` (`mode`, `interval_hours`, `phase`). It is not a full household snapshot.
-2. Read `cadence`. Set this routine to `@every {interval_hours}h`. Adaptive reports `1` while `phase` is `active` and `6` while `phase` is `idle`. Fixed reports `1`, `3`, or `6`. If the owner changed Settings, update the routine to match.
+2. Read `cadence`. On this fallback only, set this routine to `@every {interval_hours}h`. Adaptive reports `1` while `phase` is `active` and `6` while `phase` is `idle`. Fixed reports `1`, `3`, or `6`. If Wake is unset and the owner changed House → Bot check frequency, update the routine to match.
 3. If `needs_work` is false, stay silent. Do not send a “no update” message. `reason` may be `idle`, or `setup_incomplete` (keep the hourly routine, still say nothing).
 4. If `needs_work` is true, fulfill `reason` for the week that needs work and stop:
    - `pending_ballot` — waiting for dinners on an open week (this week or next week). For next week, use that ballot’s `night_headcounts` and optional `special_instructions`. Empty instructions mean nothing extra. Do not write them back onto House plate defaults.

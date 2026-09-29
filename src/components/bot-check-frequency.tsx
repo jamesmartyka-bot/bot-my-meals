@@ -11,6 +11,7 @@ import {
   BOT_CHECK_NOW_LABEL,
   BOT_CHECK_OPTIONS,
   BOT_CHECK_SECTION_LABEL,
+  BOT_CHECK_WAKE_PRIMARY,
   botCheckChoiceFromSetting,
   botCheckSettingFromChoice,
   waitingCadenceLine,
@@ -39,7 +40,12 @@ export function BotCheckNow({
   const configured = useBotWakeConfigured(wakeConfigured);
   const wakeOn = configured === true;
   const { phase, notified, message, dismiss, wake } = useWakeNow(onCheckNow);
-  const hint = wakeOn ? (wakeHint ?? BOT_CHECK_NOW_WAKE_HINT) : (hintOverride ?? BOT_CHECK_NOW_HINT);
+  const hint =
+    configured === true
+      ? (wakeHint ?? BOT_CHECK_NOW_WAKE_HINT)
+      : configured === false
+        ? (hintOverride ?? BOT_CHECK_NOW_HINT)
+        : null;
 
   return (
     <div data-slot="bot-check-now" data-wake={wakeOn ? "on" : "off"} className={cn("mt-4", className)}>
@@ -61,7 +67,7 @@ export function BotCheckNow({
           {WAKE_MEALS_NOTIFIED}
         </p>
       ) : null}
-      <p className="type-meta mt-1 text-muted-foreground">{hint}</p>
+      {hint ? <p className="type-meta mt-1 text-muted-foreground">{hint}</p> : null}
       <BallotToast message={message} onDismiss={dismiss} />
     </div>
   );
@@ -105,12 +111,16 @@ export function BotCheckFrequency({
   intervalHours,
   canEdit,
   onChange,
+  wakeConfigured,
 }: {
   mode: BotCheckMode;
   intervalHours: BotCheckIntervalHours | null;
   canEdit: boolean;
   onChange: (patch: HouseholdSettingsPatch) => Promise<void>;
+  wakeConfigured?: boolean;
 }) {
+  const configured = useBotWakeConfigured(wakeConfigured);
+  const showCadence = configured === false;
   const [error, setError] = useState<string | null>(null);
   const selected = botCheckChoiceFromSetting(mode, intervalHours);
 
@@ -123,36 +133,49 @@ export function BotCheckFrequency({
   };
 
   return (
-    <HouseCard id="bot-check" className="mt-6 scroll-mt-24" data-slot="bot-check-frequency">
-      <h2 className="type-section text-primary">{BOT_CHECK_SECTION_LABEL}</h2>
-      <p className="type-meta mt-1 text-muted-foreground">{BOT_CHECK_HELPER}</p>
-      <div role="radiogroup" aria-label={BOT_CHECK_SECTION_LABEL} className="mt-3 space-y-2">
-        {BOT_CHECK_OPTIONS.map((option) => {
-          const isSelected = selected === option.choice;
-          return (
-            <button
-              key={option.choice}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              disabled={!canEdit}
-              data-bot-check={option.choice}
-              className={cn(
-                "tap-target flex min-h-12 w-full flex-col items-start rounded-[var(--radius-button)] px-3 py-2 text-left",
-                isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground",
-              )}
-              onClick={() => choose(option.choice)}
-            >
-              <span className="type-body font-semibold">{option.label}</span>
-              {option.detail ? <span className="type-meta mt-0.5">{option.detail}</span> : null}
-            </button>
-          );
-        })}
-      </div>
+    <HouseCard
+      id="bot-check"
+      className="mt-6 scroll-mt-24"
+      data-slot="bot-check-frequency"
+      data-cadence={showCadence ? "on" : "off"}
+    >
+      {showCadence ? (
+        <>
+          <h2 className="type-section text-primary">{BOT_CHECK_SECTION_LABEL}</h2>
+          <p className="type-meta mt-1 text-muted-foreground">{BOT_CHECK_HELPER}</p>
+          <div role="radiogroup" aria-label={BOT_CHECK_SECTION_LABEL} className="mt-3 space-y-2">
+            {BOT_CHECK_OPTIONS.map((option) => {
+              const isSelected = selected === option.choice;
+              return (
+                <button
+                  key={option.choice}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  disabled={!canEdit}
+                  data-bot-check={option.choice}
+                  className={cn(
+                    "tap-target flex min-h-12 w-full flex-col items-start rounded-[var(--radius-button)] px-3 py-2 text-left",
+                    isSelected
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground",
+                  )}
+                  onClick={() => choose(option.choice)}
+                >
+                  <span className="type-body font-semibold">{option.label}</span>
+                  {option.detail ? <span className="type-meta mt-0.5">{option.detail}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : configured === true ? (
+        <p data-slot="bot-check-wake-primary" className="type-body text-foreground">
+          {BOT_CHECK_WAKE_PRIMARY}
+        </p>
+      ) : null}
       {error ? <p className="type-meta mt-2 text-destructive">{error}</p> : null}
-      <BotCheckNow />
+      <BotCheckNow wakeConfigured={configured === null ? undefined : configured} />
     </HouseCard>
   );
 }
