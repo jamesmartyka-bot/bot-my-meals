@@ -17,8 +17,11 @@ import {
 } from "@/lib/post-lock-waiting";
 import {
   BOT_CHECK_NOW_WAKE_HINT,
+  BOT_WAKE_CREATE_BODY,
+  BOT_WAKE_CREATE_SAVED,
   BOT_WAKE_DEBOUNCE_MS,
   BOT_WAKE_EMPTY,
+  FINISH_WAKE_BEFORE_CREATE,
   BOT_WAKE_KEY_HELPER,
   BOT_WAKE_KEY_LABEL,
   BOT_WAKE_KEY_PLACEHOLDER,
@@ -326,9 +329,14 @@ describe("Wake your Bot settings and gated hints", () => {
     );
     expect(BOT_WAKE_URL_PLACEHOLDER).toBe("https://…");
     expect(BOT_WAKE_EMPTY).toBe(
-      "Optional. Without it, Lock and Check now won\u2019t wake your bot from the app \u2014 message your Bot My Meals Grok Bot instead.",
+      "Required. Paste the Webhook URL before you create this week\u2019s meals.",
     );
-    expect(BOT_WAKE_EMPTY).not.toMatch(/Adaptive|every hour|schedule/i);
+    expect(BOT_WAKE_EMPTY).not.toMatch(/Adaptive|every hour|schedule|Optional/i);
+    expect(BOT_WAKE_CREATE_BODY).toBe(
+      "Paste your bot\u2019s Webhook URL so the app can wake it when you create meals, lock, or tap Check now.",
+    );
+    expect(BOT_WAKE_CREATE_SAVED).toBe("Saved. Create this week\u2019s meals will wake your bot.");
+    expect(FINISH_WAKE_BEFORE_CREATE).toBe("Finish Wake your Bot first.");
     expect(BOT_WAKE_SAVED).toBe("Saved. Check now will wake your bot.");
     expect(BOT_WAKE_REPLACE).toBe("Saved · Replace");
     expect(BOT_WAKE_SAVE_ERROR).toBe("Couldn\u2019t save. Try again.");
@@ -359,7 +367,7 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(empty).toContain("Bot webhook URL");
     expect(empty).toContain("open Routines");
     expect(empty).toContain("https://…");
-    expect(empty).toContain("Optional. Without it");
+    expect(empty).toContain("Required. Paste the Webhook URL");
     expect(empty).toContain("Sender key");
     expect(empty).toContain("Paste key");
     expect(empty).toContain("Skip if you");
@@ -369,13 +377,13 @@ describe("Wake your Bot settings and gated hints", () => {
     const saved = renderToStaticMarkup(createElement(BotWakeSettings, { canEdit: true, configured: true }));
     expect(saved).toContain("Saved. Check now will wake your bot.");
     expect(saved).toContain("Saved · Replace");
-    expect(saved).not.toContain("Optional. Without it");
+    expect(saved).not.toContain("Required. Paste the Webhook URL");
     expect(saved).not.toContain('id="bot-wake-url"');
     expect(saved).not.toContain('id="bot-wake-key"');
     expect(saved).not.toContain('value="https://');
 
     const member = renderToStaticMarkup(createElement(BotWakeSettings, { canEdit: false, configured: false }));
-    expect(member).toContain("Optional. Without it");
+    expect(member).toContain("Required. Paste the Webhook URL");
     expect(member).not.toContain("<form");
   });
 
@@ -413,6 +421,21 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(settingsOn).not.toContain("Every hour");
     expect(settingsOn).not.toContain("Every 6 hours");
     expect(settingsOn).not.toContain(BOT_WAKE_EMPTY);
+
+    const setupEmpty = renderToStaticMarkup(
+      createElement(BotWakeSettings, { canEdit: true, configured: false, placement: "setup" }),
+    );
+    expect(setupEmpty).toContain(BOT_WAKE_EMPTY);
+    expect(setupEmpty).toContain(BOT_WAKE_CREATE_BODY);
+    expect(setupEmpty).not.toContain("Optional");
+    expect(setupEmpty).not.toContain(BOT_CHECK_NOW_WAKE_HINT);
+
+    const setupSaved = renderToStaticMarkup(
+      createElement(BotWakeSettings, { canEdit: true, configured: true, placement: "setup" }),
+    );
+    expect(setupSaved).toContain(BOT_WAKE_CREATE_SAVED);
+    expect(setupSaved).not.toContain(BOT_WAKE_SAVED);
+    expect(setupSaved).not.toContain(BOT_WAKE_EMPTY);
 
     const waitingOff = renderToStaticMarkup(
       createElement(PostLockWaitingCard, { wakeConfigured: false }),
@@ -464,7 +487,16 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(provider).toMatch(/saveWeekPeople:[\s\S]*wakeWeekOrPlanChange/);
     expect(provider).toMatch(/savePlanningPeople:[\s\S]*wakeWeekOrPlanChange/);
     expect(provider).toMatch(/planNextWeek:[\s\S]*wakeWeekOrPlanChange/);
+    expect(provider).toMatch(/requestWeekBallot:[\s\S]*fetchBotWakeConfigured[\s\S]*FINISH_WAKE_BEFORE_CREATE/);
     expect(provider).toMatch(/requestWeekBallot:[\s\S]*wakeWeekOrPlanChange/);
+    const wizard = readFileSync(path.join(srcRoot, "components/setup-wizard.tsx"), "utf8");
+    const week = readFileSync(path.join(srcRoot, "app/week/page.tsx"), "utf8");
+    expect(wizard).toContain('placement="setup"');
+    expect(wizard).toContain("disabled={busy || !createReady}");
+    expect(wizard).toContain("FINISH_WAKE_BEFORE_CREATE");
+    expect(wizard).not.toMatch(/create-meals[\s\S]{0,400}Skip/);
+    expect(week).toContain("disabled={creating || !wakeReady}");
+    expect(week).toContain("FINISH_WAKE_BEFORE_CREATE");
     expect(settings).toContain("BotWakeSettings");
     expect(settings).not.toContain("BotCheckFrequency");
     expect(settings).not.toContain("Bot check frequency");
@@ -491,6 +523,8 @@ describe("Wake your Bot settings and gated hints", () => {
     expect(docs).toContain("Authorization: Bearer");
     expect(docs).toMatch(/stay quiet if nothing changed/i);
     expect(docs).toMatch(/Waiting never shows a schedule/);
+    expect(docs).toMatch(/required before Create this week's meals/);
+    expect(readme).toMatch(/required before Create this week's meals/);
     expect(docs).toMatch(/needs_work/);
     expect(docs).not.toMatch(/@every/);
     expect(docs).not.toMatch(/Adaptive/);

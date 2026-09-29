@@ -6,7 +6,11 @@ export const BOT_WAKE_URL_HELPER =
   "In your Bot My Meals Grok Bot, open Routines, open the wake routine, and copy Webhook URL. Paste it here so Lock and Check now can wake your bot.";
 export const BOT_WAKE_URL_PLACEHOLDER = "https://…";
 export const BOT_WAKE_EMPTY =
-  "Optional. Without it, Lock and Check now won\u2019t wake your bot from the app \u2014 message your Bot My Meals Grok Bot instead.";
+  "Required. Paste the Webhook URL before you create this week\u2019s meals.";
+export const BOT_WAKE_CREATE_BODY =
+  "Paste your bot\u2019s Webhook URL so the app can wake it when you create meals, lock, or tap Check now.";
+export const BOT_WAKE_CREATE_SAVED = "Saved. Create this week\u2019s meals will wake your bot.";
+export const FINISH_WAKE_BEFORE_CREATE = "Finish Wake your Bot first.";
 export const BOT_WAKE_SAVED = "Saved. Check now will wake your bot.";
 export const BOT_WAKE_REPLACE = "Saved · Replace";
 export const BOT_WAKE_SAVE_ERROR = "Couldn\u2019t save. Try again.";

@@ -5,8 +5,8 @@ import { createClient } from "@supabase/supabase-js";
 import { BallotToast } from "@/components/ballot-toast";
 import { botCheckForHousehold } from "@/lib/bot-check";
 import { patchPlanningPeople } from "@/lib/planning-people";
-import { shouldWakeNeedsWork } from "@/lib/bot-wake";
-import { requestBotWake } from "@/lib/bot-wake-client";
+import { FINISH_WAKE_BEFORE_CREATE, shouldWakeNeedsWork } from "@/lib/bot-wake";
+import { fetchBotWakeConfigured, requestBotWake } from "@/lib/bot-wake-client";
 import {
   PENDING_REFRESH_EVENT,
   markBotWakeNotified,
@@ -789,6 +789,9 @@ function SupabaseSupperProvider({ children }: { children: React.ReactNode }) {
         run(async () => {
           const client = createSupabaseBrowserClient();
           if (!client) throw new Error("Not signed in");
+          if (!(await fetchBotWakeConfigured())) {
+            throw new Error(FINISH_WAKE_BEFORE_CREATE);
+          }
           return supabaseRequestWeekBallot(client, startsOn);
         }).then((weekId) => {
           wakeWeekOrPlanChange();
