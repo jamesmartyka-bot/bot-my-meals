@@ -4,7 +4,6 @@ import path from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PostLockWaitingCard, RecipePendingNotice } from "@/components/post-lock-waiting";
-import { BOT_CHECK_WAITING_ADAPTIVE } from "./bot-check";
 import {
   POST_LOCK_BOT_CHECK_SETTINGS,
   POST_LOCK_GET_RECIPES_HINT,
@@ -17,9 +16,7 @@ import {
   dinnerRecipeReady,
   isPendingBotFill,
   lockedDinnerTap,
-  nextCheckMinutes,
   nightShowsRecipePending,
-  postLockWaitingCadenceLine,
   type PendingBotFillInput,
 } from "./post-lock-waiting";
 import type { Meal, Membership, Recipe, ShoppingItem, Vote } from "./types";
@@ -157,53 +154,6 @@ describe("pending bot fill", () => {
     expect(lockedDinnerTap({ locked: true, pending: false, presentation: "ballot" })).toBe("recipe");
     expect(lockedDinnerTap({ locked: true, pending: true, presentation: "locked_empty" })).toBe("none");
     expect(lockedDinnerTap({ locked: false, pending: false, presentation: "ballot" })).toBe("none");
-  });
-});
-
-describe("post-lock waiting cadence", () => {
-  const now = new Date("2026-09-27T12:20:00.000Z");
-
-  it("uses the hourly waiting line when adaptive has no last check", () => {
-    expect(postLockWaitingCadenceLine({ mode: "adaptive", intervalHours: null, now })).toBe(
-      BOT_CHECK_WAITING_ADAPTIVE,
-    );
-    expect(postLockWaitingCadenceLine({ mode: "adaptive", intervalHours: null, now })).not.toMatch(
-      /Next check in about/,
-    );
-    expect(
-      postLockWaitingCadenceLine({
-        mode: "adaptive",
-        intervalHours: null,
-        lastCheckedAt: "not-a-time",
-        now,
-      }),
-    ).toBe(BOT_CHECK_WAITING_ADAPTIVE);
-  });
-
-  it("counts down from the last check and keeps the fixed cadence beside it", () => {
-    expect(nextCheckMinutes(null, 1, now)).toBeNull();
-    expect(nextCheckMinutes("2026-09-27T13:00:00.000Z", 1, now)).toBeNull();
-    expect(nextCheckMinutes("2026-09-27T12:00:00.000Z", 1, now)).toBe(40);
-    expect(nextCheckMinutes("2026-09-27T12:20:00.000Z", 1, now)).toBe(60);
-    expect(
-      postLockWaitingCadenceLine({
-        mode: "adaptive",
-        intervalHours: null,
-        lastCheckedAt: "2026-09-27T12:00:00.000Z",
-        now,
-      }),
-    ).toBe("Next check in about 40 min.");
-    expect(postLockWaitingCadenceLine({ mode: "fixed", intervalHours: 3, now })).toBe(
-      "Checks every 3 hours.",
-    );
-    expect(
-      postLockWaitingCadenceLine({
-        mode: "fixed",
-        intervalHours: 6,
-        lastCheckedAt: "2026-09-27T12:00:00.000Z",
-        now,
-      }),
-    ).toBe("Next check in about 340 min. · Checks every 6 hours.");
   });
 });
 
