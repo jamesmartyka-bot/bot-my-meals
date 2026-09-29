@@ -89,6 +89,7 @@ Save and let the first build finish.
 **Whose GitHub repo to connect**
 
 - Use **Use this template** or **Fork** on GitHub, then connect **your** copy to Workers Builds.
+- Later updates from Tim: [Keeping up with Tim](#keeping-up-with-tim).
 
 **Whose HTTPS origin**
 
@@ -254,6 +255,35 @@ Row Level Security is household-scoped (`household_id`). Admins manage membershi
 - Hand back HTTPS URL + Safari Add to Home Screen.
 - Never invent grocery prices. Cart adds only where the store actually supports them — don’t claim Smith’s or any store cart add unless it’s real. Do NOT invent prices. Do NOT claim unsupported cart features.
 
+## Keeping up with Tim
+
+You used **Use this template** or **Fork**. Your house runs from **your** GitHub copy. New app work lands on [timdoes/bot-my-meals](https://github.com/timdoes/bot-my-meals). Pull it when you want it.
+
+**One-time:** add Tim’s repo as `upstream` (skip this if you already have that remote):
+
+```bash
+git remote add upstream https://github.com/timdoes/bot-my-meals.git
+```
+
+**When you want updates**, fetch and merge `upstream/main` into **your** `main`:
+
+```bash
+git fetch upstream
+git checkout main
+git merge upstream/main
+git push origin main
+```
+
+If you **Fork**ed on GitHub, you can instead open your fork → **Sync fork**. That pulls `upstream/main` into your `main`. A **Use this template** copy is not a fork, so it has no Sync button — use the commands above.
+
+Cloudflare **Workers Builds** redeploys Worker `bot-my-meals` when those `main` changes match the watch paths. Let that build finish.
+
+**Leave your host alone.** Site URL and Redirect URLs stay **your** workers.dev or **your** custom domain. Do not change them to `{handle}.botmymeals.com`.
+
+**Never** put the Supabase **service-role** key in git. Only the two public keys belong in Worker / Builds vars: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+If the merge adds files under [`supabase/migrations/`](supabase/migrations/), run the new ones in filename order (same as [step 4](#4-run-every-migration-in-filename-order)).
+
 ## Ask your Grok Bot (optional)
 
 This hosting guide does **not** require creating a Grok Bot. Teammate / bot setup is separate. If you already have a helper bot, you can paste:
@@ -271,6 +301,8 @@ Do this, one decision at a time if you need me to click:
 4) Turn on Email sign-in. Turn Confirm email OFF so people create an account and stay in the app (important on iPhone Home Screen). Set Site URL to our HTTPS origin, and add /auth/callback and /login/new-password (our workers.dev or our own domain — not {handle}.botmymeals.com). People use email + password in the app — not a magic link. If a password minimum is shown, set it to at least 8. Optional later: custom SMTP + a code in the email template ({{ .Token }}) for sign-in codes. Do not turn on Apple or Google for Install. Passkeys later. Do not require custom SMTP to install.
 5) Set only these two public Worker env vars, then redeploy: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY. Never use the service-role key.
 6) Give me the HTTPS link, walk me through Add to Home Screen, create the household Admin, finish the 7-step setup, then add my partner (share the /join/<token> link; House → People still works).
+
+Keeping up with Tim: if we Used this template or Forked, add git remote upstream https://github.com/timdoes/bot-my-meals.git (skip if present), then fetch + merge upstream/main into our main (or GitHub Sync fork). Workers Builds redeploys on main. Site URL / Redirect URLs stay our host — not {handle}.botmymeals.com. Never put service-role in git; only the public Supabase URL + anon key.
 
 Sign-in: Create account or Sign in with email and password in the app. You stay in the app. Do not finish sign-in by tapping a link in Mail.
 

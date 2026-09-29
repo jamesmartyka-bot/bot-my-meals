@@ -205,6 +205,20 @@ function expectWebhookWaitingInstallPaste(doc: string) {
   expect(doc).not.toMatch(/grandma/i);
 }
 
+function expectKeepingUpWithTim(doc: string) {
+  expect(doc).toMatch(/Keeping up with Tim/);
+  expect(doc).toMatch(
+    /git remote add upstream https:\/\/github\.com\/timdoes\/bot-my-meals\.git/,
+  );
+  expect(doc).toMatch(/upstream\/main/);
+  expect(doc).toMatch(/Sync fork/);
+  expect(doc).toMatch(/Workers Builds/);
+  expect(doc).toMatch(/not \{handle\}\.botmymeals\.com/);
+  expect(doc).toMatch(/service-role/);
+  expect(doc).toMatch(/NEXT_PUBLIC_SUPABASE_URL|public Supabase URL/);
+  expect(doc).not.toMatch(/grandma/i);
+}
+
 describe("Install docs — email + password + Wake on app event", () => {
   it("locks Auth, domains, and the #grok-prompt paste on password sign-in and Cos webhook wake", () => {
     const readme = readRepo("README.md");
@@ -227,6 +241,16 @@ describe("Install docs — email + password + Wake on app event", () => {
     expectTitleRowEditNightsWaitingFeedbackPaste(readme);
     expectWebhookWaitingInstallPaste(paste);
     expectWebhookWaitingInstallPaste(readme);
+    expectKeepingUpWithTim(readme);
+    expect(paste).toMatch(/Keeping up with Tim/);
+    expect(paste).toMatch(
+      /git remote upstream https:\/\/github\.com\/timdoes\/bot-my-meals\.git/,
+    );
+    expect(paste).toMatch(/upstream\/main/);
+    expect(paste).toMatch(/Sync fork/);
+    expect(paste).toMatch(/Workers Builds redeploys on main/);
+    expect(paste).toMatch(/not \{handle\}\.botmymeals\.com/);
+    expect(paste).toMatch(/Never put service-role in git/);
 
     expect(paste).toMatch(/Confirm email OFF/);
     expect(paste).toMatch(/email \+ password/);
