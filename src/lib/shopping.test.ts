@@ -138,13 +138,15 @@ describe("shopping merge", () => {
 });
 
 describe("sticky store labels", () => {
-  it("labels Trader Joe's and Smith's only — never Kroger or a third store", () => {
+  it("keeps Trader Joe's and Smith's labels and still shows other household stores", () => {
     expect(listStoreLabel({ slug: "trader-joes" })).toBe(STORE_LABEL_TRADER_JOES);
     expect(listStoreLabel({ slug: "smiths" })).toBe(STORE_LABEL_SMITHS);
     expect(listStoreLabel({ slug: "trader-joe-s" })).toBe(STORE_LABEL_TRADER_JOES);
     expect(listStoreLabel({ slug: "smith-s" })).toBe(STORE_LABEL_SMITHS);
+    expect(listStoreLabel({ slug: "trader-joes", name: "TJ" })).toBe(STORE_LABEL_TRADER_JOES);
+    expect(listStoreLabel({ slug: "kroger", name: "Kroger" })).toBe("Kroger");
+    expect(listStoreLabel({ slug: "costco", name: "Costco" })).toBe("Costco");
     expect(listStoreLabel({ slug: "kroger" })).toBeNull();
-    expect(listStoreLabel({ slug: "costco" })).toBeNull();
     expect(STORE_LABEL_TRADER_JOES).toBe("Trader Joe's");
     expect(STORE_LABEL_SMITHS).toBe("Smith's");
 
@@ -196,14 +198,77 @@ describe("sticky store labels", () => {
     ];
 
     const groups = groupStickyStoreLists(items, stores);
-    expect(groups.map((group) => group.label)).toEqual(["Trader Joe's", "Smith's"]);
+    expect(groups.map((group) => group.label)).toEqual(["Trader Joe's", "Kroger", "Smith's"]);
     expect(groups.flatMap((group) => group.items.map((item) => item.name))).toEqual([
       "Salsa",
+      "Milk",
       "Chicken",
     ]);
-    expect(JSON.stringify(groups)).not.toContain("Kroger");
-    expect(JSON.stringify(groups)).not.toContain("Milk");
-    expect(JSON.stringify(groups)).not.toContain("399");
+    expect(groups[1]?.items[0]?.priceCents).toBe(399);
+    expect(listItemDisplay(items[1]!)).toEqual({ name: "Milk", quantity: "1 gal" });
+    expect(JSON.stringify(listItemDisplay(items[1]!))).not.toContain("399");
+  });
+
+  it("shows a non Trader Joe's or Smith's store under its household name", () => {
+    const stores: Store[] = [
+      { id: "wm", householdId: "h", name: "Walmart", slug: "walmart", sortOrder: 0 },
+      { id: "wmo", householdId: "h", name: "Walmart", slug: "walmart-online", sortOrder: 1 },
+      { id: "tj", householdId: "h", name: "TJ", slug: "trader-joes", sortOrder: 2 },
+    ];
+    const items: ShoppingItem[] = [
+      {
+        id: "1",
+        householdId: "h",
+        shoppingListId: "l",
+        storeId: "wm",
+        name: "Bananas",
+        quantity: 1,
+        unit: "bunch",
+        priceCents: null,
+        priceSource: null,
+        pricedAt: null,
+        checked: false,
+      },
+      {
+        id: "2",
+        householdId: "h",
+        shoppingListId: "l",
+        storeId: "wmo",
+        name: "Oat milk",
+        quantity: 2,
+        unit: "ct",
+        priceCents: null,
+        priceSource: null,
+        pricedAt: null,
+        checked: false,
+      },
+      {
+        id: "3",
+        householdId: "h",
+        shoppingListId: "l",
+        storeId: "tj",
+        name: "Salsa",
+        quantity: 1,
+        unit: "jar",
+        priceCents: null,
+        priceSource: null,
+        pricedAt: null,
+        checked: false,
+      },
+    ];
+
+    const groups = groupStickyStoreLists(items, stores);
+    expect(groups.map((group) => group.label)).toEqual(["Walmart", "Walmart", "Trader Joe's"]);
+    expect(groups.map((group) => group.store.slug)).toEqual([
+      "walmart",
+      "walmart-online",
+      "trader-joes",
+    ]);
+    expect(groups[0]?.items.map((item) => item.name)).toEqual(["Bananas"]);
+    expect(groups[1]?.items.map((item) => item.name)).toEqual(["Oat milk"]);
+    expect(groups.flatMap((group) => group.items).every((item) => item.priceCents == null)).toBe(
+      true,
+    );
   });
 
   it("renders items when the store slug is the apostrophe form smith-s", () => {
