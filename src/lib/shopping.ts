@@ -67,11 +67,13 @@ export function buildShoppingItems(input: {
   }));
 }
 
-/** Locked-list sticky headers — Trader Joe’s / Smith’s only. Never a cart. */
+/** Friendly sticky headers for known slugs. Other stores use their household name. Never a cart. */
 export const STORE_LABEL_TRADER_JOES = "Trader Joe's";
 export const STORE_LABEL_SMITHS = "Smith's";
 
-export function listStoreLabel(store: Pick<Store, "slug">): string | null {
+export function listStoreLabel(
+  store: Pick<Store, "slug"> & Partial<Pick<Store, "name">>,
+): string | null {
   switch (store.slug) {
     case "trader-joes":
     case "trader-joe-s":
@@ -80,7 +82,7 @@ export function listStoreLabel(store: Pick<Store, "slug">): string | null {
     case "smith-s":
       return STORE_LABEL_SMITHS;
     default:
-      return null;
+      return store.name?.trim() || null;
   }
 }
 
@@ -99,13 +101,13 @@ export function groupItemsByStore(
     .filter((group) => group.items.length > 0);
 }
 
-/** Post-lock sticky sections. Catalog slugs, plus apostrophe slugs saved before the picker passed a slug. */
+/** Post-lock sticky sections for every household store that has items. */
 export function groupStickyStoreLists(
   items: ShoppingItem[],
   stores: Store[],
 ): Array<{ store: Store; label: string; items: ShoppingItem[] }> {
   return groupItemsByStore(items, stores).flatMap((group) => {
-    const label = listStoreLabel(group.store);
+    const label = listStoreLabel(group.store) || group.store.slug.trim();
     return label ? [{ ...group, label }] : [];
   });
 }
