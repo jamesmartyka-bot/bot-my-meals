@@ -6,6 +6,7 @@ import { AuthGate } from "@/components/auth-gate";
 import { LockFirstEmpty } from "@/components/lock-first-empty";
 import { PostLockWaitingCard } from "@/components/post-lock-waiting";
 import { PastWeekDetail } from "@/components/past-weeks";
+import { pastRecipeAccess } from "@/lib/past-recipes";
 import { StatusStrip } from "@/components/status-strip";
 import { useSupper } from "@/components/supper-provider";
 import { useViewedWeek } from "@/components/use-viewed-week";
@@ -34,7 +35,7 @@ export default function RecipesPage() {
 }
 
 function RecipesBody() {
-  const { snapshot } = useSupper();
+  const { snapshot, session } = useSupper();
   const { role, scope, past } = useViewedWeek();
   if (!snapshot) {
     return (
@@ -52,7 +53,16 @@ function RecipesBody() {
         backHref="/week"
         backLabel={formatWeekRange(past.startsOn)}
       >
-        <PastWeekDetail week={past} />
+        <PastWeekDetail
+          week={past}
+          canOpenRecipes={
+            pastRecipeAccess({
+              userId: session?.userId ?? null,
+              readerHouseholdId: session?.householdId ?? null,
+              dinnerHouseholdId: snapshot.household.id,
+            }).ok
+          }
+        />
       </AppShell>
     );
   }

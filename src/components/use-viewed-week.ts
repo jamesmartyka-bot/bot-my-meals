@@ -2,8 +2,7 @@
 
 import { useSupper } from "@/components/supper-provider";
 import { scopeForRole } from "@/lib/open-weeks";
-import type { WeekRole, WeekScope } from "@/lib/types";
-import type { MealHistoryWeek } from "@/lib/types";
+import type { PastWeek, WeekRole, WeekScope } from "@/lib/types";
 import {
   navigatorStops,
   resolveNavigatorIndex,
@@ -15,7 +14,7 @@ export function useViewedWeek(): {
   selection: ViewedWeekSelection;
   role: WeekRole;
   scope: WeekScope | null;
-  past: MealHistoryWeek | null;
+  past: PastWeek | null;
   hasPlanning: boolean;
   stops: NavigatorStop[];
   index: number;

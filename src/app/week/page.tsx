@@ -16,6 +16,7 @@ import { EditNightsControl } from "@/components/edit-nights-control";
 import { LockedNightFrame, MealsWaitingCard, PostLockWaitingCard, PostLockWaitingSheet } from "@/components/post-lock-waiting";
 import { requestPendingRefresh, useBotWakeConfigured } from "@/components/use-bot-wake";
 import { PastWeekDetail } from "@/components/past-weeks";
+import { pastRecipeAccess } from "@/lib/past-recipes";
 import { EditNightsSheet } from "@/components/edit-nights-sheet";
 import { PlanningPeopleGate } from "@/components/planning-people-gate";
 import { UnlockWeekControl } from "@/components/unlock-week-control";
@@ -338,7 +339,16 @@ function WeekBallot() {
     >
       <InstallPrompt />
       {viewingPast && past ? (
-        <PastWeekDetail week={past} />
+        <PastWeekDetail
+          week={past}
+          canOpenRecipes={
+            pastRecipeAccess({
+              userId: session?.userId ?? null,
+              readerHouseholdId: session?.householdId ?? null,
+              dinnerHouseholdId: snapshot.household.id,
+            }).ok
+          }
+        />
       ) : showPeopleGate && scope ? (
         <PlanningPeopleGate
           household={snapshot.household}

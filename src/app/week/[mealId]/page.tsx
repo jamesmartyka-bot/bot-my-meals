@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { AuthGate } from "@/components/auth-gate";
 import { BallotToast } from "@/components/ballot-toast";
 import { RecipePendingNotice } from "@/components/post-lock-waiting";
+import { PastRecipeDetail } from "@/components/past-weeks";
 import { RecipeBlock } from "@/components/recipe-view";
 import { SaveMealControl } from "@/components/save-meal-button";
 import { useSupper } from "@/components/supper-provider";
@@ -12,14 +13,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { EMPTY_DAY_TITLE } from "@/lib/ballot";
-import { formatNightDate, weekdayLabelFromNight } from "@/lib/dates";
+import { formatNightDate, formatWeekRange, weekdayLabelFromNight } from "@/lib/dates";
 import { servingsLabel } from "@/lib/headcount";
 import { REPLACEMENT_IDEAS } from "@/lib/ideas";
 import { canActOnBallot, isNightOff, latestVoteForMeal, voteFor, votingMembers } from "@/lib/lock";
 import { scopeForMeal, weekHomeTitle } from "@/lib/open-weeks";
+import { findPastDinner, pastRecipeAccess } from "@/lib/past-recipes";
 import { nightShowsRecipePending } from "@/lib/post-lock-waiting";
 import { SAVE_TOAST, UNSAVE_TOAST, mealRecipeKey, mealSaveAvailability, savedMealForKey } from "@/lib/saved-meals";
 import { nightStaysLocked } from "@/lib/week-chrome";
+import { navigatorHref } from "@/lib/week-navigator";
 import type { VoteChoice } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -41,12 +44,34 @@ function MealDetail({ mealId }: { mealId: string }) {
   const [saving, setSaving] = useState<string | null>(null);
   const [toast, setToast] = useState<string | undefined>();
   const located = snapshot ? scopeForMeal(snapshot, mealId) : null;
+  const pastHit = snapshot && !located ? findPastDinner(snapshot.mealHistory, mealId) : null;
+  const pastAccess =
+    snapshot && pastHit
+      ? pastRecipeAccess({
+          userId: session?.userId ?? null,
+          readerHouseholdId: session?.householdId ?? null,
+          dinnerHouseholdId: snapshot.household.id,
+        })
+      : null;
   const scope = located?.scope ?? null;
   const weekRole = located?.role ?? "cooking";
   const mealWeekRole = located?.role ?? null;
   useEffect(() => {
     if (mealWeekRole) setViewedRole(mealWeekRole);
   }, [mealWeekRole, setViewedRole]);
+  if (snapshot && pastHit && pastAccess?.ok) {
+    const weekday = weekdayLabelFromNight(pastHit.night.nightDate);
+    return (
+      <AppShell
+        title={pastHit.night.title}
+        eyebrow={`${weekday} · ${formatNightDate(pastHit.night.nightDate)}`}
+        backHref={navigatorHref({ kind: "past", startsOn: pastHit.week.startsOn })}
+        backLabel={formatWeekRange(pastHit.week.startsOn)}
+      >
+        <PastRecipeDetail night={pastHit.night} />
+      </AppShell>
+    );
+  }
   const meal = scope?.meals.find((item) => item.id === mealId);
   const latest =
     meal && snapshot
