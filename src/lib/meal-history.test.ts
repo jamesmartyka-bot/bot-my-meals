@@ -103,7 +103,9 @@ describe("history copy", () => {
     expect(PAST_WEEKS_EMPTY).toBe(
       "No finished weeks yet. Locked weeks show up here after the week ends.",
     );
-    expect(PAST_WEEKS_HELPER).toBe("Titles only — recipes aren’t kept for past weeks.");
+    expect(PAST_WEEKS_HELPER).toBe(
+      "Tap a dinner to open its saved recipe. Past weeks stay read-only.",
+    );
     expect(dinnerCountLabel(1)).toBe("1 dinner");
     expect(dinnerCountLabel(7)).toBe("7 dinners");
     expect(historyWeekRowLabel("2026-09-27", 7)).toBe("Sep 27 – Oct 3 · 7 dinners");
@@ -169,7 +171,7 @@ describe("history payload", () => {
 });
 
 describe("Past weeks surfaces", () => {
-  it("lives under House and This week, with no History tab and no recipe replay", () => {
+  it("lives under House and This week, with read-only links to retained recipes", () => {
     const shell = readFileSync(path.join(srcRoot, "components/app-shell.tsx"), "utf8");
     const settings = readFileSync(path.join(srcRoot, "app/settings/page.tsx"), "utf8");
     const week = readFileSync(path.join(srcRoot, "app/week/page.tsx"), "utf8");
@@ -201,18 +203,29 @@ describe("Past weeks surfaces", () => {
     expect(detail).toContain("navigatorHref");
     expect(detail).toContain("router.replace");
     expect(view).toContain("PAST_WEEKS_EMPTY");
-    expect(view).toContain("PAST_TITLES_ONLY");
+    expect(view).toContain("canOpenRecipes");
+    expect(view).toContain('data-slot="past-dinner-link"');
+    expect(view).toContain('data-slot="past-recipe"');
+    expect(view).toContain('data-readonly="true"');
     expect(view).toContain("navigatorHref");
     expect(view).toContain("historyNightLine");
     expect(view).toContain("historyWeekRowLabel");
     expect(view).toContain("HISTORY_UI_LIMIT");
+    expect(view).not.toContain("SaveMealControl");
     expect(index).toContain("PAST_WEEKS_HELPER");
     expect(week).toContain("PastWeekDetail");
+    expect(week).toContain("pastRecipeAccess");
     expect(history).not.toContain("/recipes");
-    expect(history).not.toContain("/week/");
+    expect(index).not.toContain("/week/");
+    expect(detail).not.toContain('data-slot="past-dinner-link"');
+    expect(view).toContain("/week/");
     expect(history).not.toMatch(/\bSwap\b/);
     expect(history).not.toMatch(/\bRemove\b/);
     expect(history).not.toMatch(/\bLock\b/);
+    const list = readFileSync(path.join(srcRoot, "app/list/page.tsx"), "utf8");
+    expect(list).toContain("PAST_TITLES_ONLY");
+    expect(list).toContain('data-slot="past-week-list"');
+    expect(list).not.toContain("past-dinner-link");
   });
 
   it("stores titles in meal history and does not copy recipes or shopping lines", () => {

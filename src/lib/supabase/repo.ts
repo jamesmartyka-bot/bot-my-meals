@@ -40,6 +40,7 @@ import { canActOnBallot, lastWriterWinsToast, latestVoteForMeal, migrateVoteChoi
 import { isAdmin } from "@/lib/users";
 import { coupleNightsFromHeadcounts, normalizeNightHeadcounts } from "@/lib/headcount";
 import { parseMealHistory, todayInTimeZone } from "@/lib/meal-history";
+import { attachPastDinners } from "@/lib/past-recipes";
 import { splitOpenWeeks } from "@/lib/open-weeks";
 import { parseSavedMeals } from "@/lib/saved-meals";
 import { redactUntilLocked } from "@/lib/visibility";
@@ -418,7 +419,13 @@ export async function fetchSupabaseSnapshot(
     ),
     joinToken: joinTokenRes.error ? null : (joinTokenRes.data?.token ?? null),
     ballotRequest: cooking.ballotRequest,
-    mealHistory: parseMealHistory(historyRes.error ? null : historyRes.data),
+    mealHistory: attachPastDinners({
+      weeks: parseMealHistory(historyRes.error ? null : historyRes.data),
+      meals: allMeals,
+      recipes: allRecipes,
+      householdId,
+      weekStartsOn: Number(householdRow.week_starts_on) || 0,
+    }),
     savedMeals: parseSavedMeals(savedMealsRes.error ? null : savedMealsRes.data),
   };
 

@@ -9,7 +9,8 @@ export const PAST_WEEKS_LABEL = "Past weeks";
 export const PAST_WEEKS_EMPTY =
   "No finished weeks yet. Locked weeks show up here after the week ends.";
 
-export const PAST_WEEKS_HELPER = "Titles only — recipes aren’t kept for past weeks.";
+export const PAST_WEEKS_HELPER =
+  "Tap a dinner to open its saved recipe. Past weeks stay read-only.";
 
 const HOUSE_TIME_ZONE = "America/Los_Angeles";
 

@@ -161,7 +161,6 @@ export type Week = {
   specialInstructions: string | null;
 };
 
-/** Title-only dinner kept after a week finishes. No recipe payload. */
 export type MealHistoryNight = {
   nightDate: string;
   title: string;
@@ -171,6 +170,16 @@ export type MealHistoryNight = {
 export type MealHistoryWeek = {
   startsOn: string;
   nights: MealHistoryNight[];
+};
+
+export type PastDinner = MealHistoryNight & {
+  mealId: string | null;
+  recipe: Recipe | null;
+};
+
+export type PastWeek = {
+  startsOn: string;
+  nights: PastDinner[];
 };
 
 /** Household-shared save. One row per recipe identity. */
@@ -280,7 +289,7 @@ export type HouseholdSnapshot = {
   ballotRequest?: BallotRequest | null;
   /** The single next week, when that row exists. Absent means only cooking is open. */
   planning?: WeekScope | null;
-  mealHistory: MealHistoryWeek[];
+  mealHistory: PastWeek[];
   savedMeals: SavedMeal[];
 };
 
